@@ -64,7 +64,7 @@ def create_matplotlib_plot(data, width, height, min_residual, max_iter):
 # Sidebar controls
 with st.sidebar:
     st.subheader("Plot Settings")
-    width = st.number_input('Figure Width', min_value=1, value=12)
+    width = st.number_input('Figure Width', min_value=1, value=10)
     height = st.number_input('Figure Height', min_value=1, value=4)
     show_filenames = st.checkbox('Show Filenames', value=False)
 
@@ -73,7 +73,7 @@ files = st.file_uploader(
     "Upload 'residual.dat' files here",
     type=['dat'],
     accept_multiple_files=True,
-    help="Files should be in the _postProcessing_ folder"
+    help="Files should be located in the _postProcessing_ folder of the OpenFOAM case."
 )
 
 if files:
