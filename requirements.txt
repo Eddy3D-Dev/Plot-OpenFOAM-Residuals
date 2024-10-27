@@ -3,3 +3,4 @@ matplotlib
 pandas
 numpy
 click==8
+altair
