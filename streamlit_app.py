@@ -79,8 +79,8 @@ files = st.file_uploader(
 if files:
     # Create tabs
     tab1, tab2, tab3 = st.tabs([
-        "Altair interface",
-        "Standard matplotlib interface",
+        "Altair",
+        "Matplotlib",
         "Dataframe"
     ])
     
