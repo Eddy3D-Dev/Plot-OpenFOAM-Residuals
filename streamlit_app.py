@@ -22,6 +22,8 @@ def pre_parse(file):
     data = raw_data.iloc[:, 1:].shift(+1, axis=1).drop(["Time"], axis=1)
     data = data.set_index(iterations)
     data = data.iloc[1:, :]
+    data = data.dropna(axis=1, how="all")          # keeps only columns that have at least one non-NaN
+    
     return data, iterations
 
 def create_altair_plot(data):
