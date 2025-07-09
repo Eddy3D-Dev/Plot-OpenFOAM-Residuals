@@ -3,55 +3,45 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import math
 import altair as alt
+import openfoam_residuals.filesystem as fs
+import openfoam_residuals.plot as orp
+import tempfile
+from pathlib import Path
+
 
 # Page configuration
 st.set_page_config(layout="wide")
 st.header("Plot OpenFOAM Residuals")
 
-# Helper functions
-def order_of_magnitude(number):
-    return math.floor(math.log10(number))
 
-def roundup(x):
-    return int(math.ceil(x / 100.0)) * 100
-
-def pre_parse(file):
-    """Parse OpenFOAM residuals file and return formatted data"""
-    raw_data = pd.read_csv(file, skiprows=1, delimiter='\s+')
-    iterations = raw_data['#']
-    data = raw_data.iloc[:, 1:].shift(+1, axis=1).drop(["Time"], axis=1)
-    data = data.set_index(iterations)
-    data = data.iloc[1:, :]
-    data = data.dropna(axis=1, how="all")          # keeps only columns that have at least one non-NaN
-    
-    return data, iterations
 
 def create_altair_plot(data):
     """Create Altair visualization"""
+    # reset_index() will create a 'Time' column from the index
     data_melted = data.reset_index().melt(
-        id_vars=['#'],
+        id_vars=['Time'], # Use 'Time' as the identifier variable
         value_vars=['Ux', 'Uy', 'Uz', 'p', 'epsilon', 'k'],
         var_name='Residual',
         value_name='Value'
     )
-    
+
     chart = alt.Chart(data_melted).mark_line(point=False).encode(
-        x=alt.X('#:Q', title='Iteration'),
+        x=alt.X('Time:Q', title='Iteration'), # Use the 'Time' column for the x-axis
         y=alt.Y('Value:Q', scale=alt.Scale(type='log'), title='Residuals'),
         color=alt.Color('Residual:N', title='Variable'),
-        tooltip=['#', 'Residual', 'Value']
+        tooltip=['Time', 'Residual', 'Value'] # Update tooltip to use 'Time'
     ).properties(
         width=800,
         height=400
     )
-    
+
     return chart
 
 def create_matplotlib_plot(data, width, height, min_residual, max_iter):
     """Create Matplotlib visualization"""
     plt.rcParams['figure.figsize'] = [int(width), int(height)]
     plt.rcParams['figure.dpi'] = 600
-    
+
     plot = data.plot(logy=True)
     fig = plot.get_figure()
     ax = plt.gca()
@@ -60,7 +50,7 @@ def create_matplotlib_plot(data, width, height, min_residual, max_iter):
     ax.set_ylabel("Residuals")
     ax.set_ylim(min_residual, 1)
     ax.set_xlim(0, max_iter)
-    
+
     return fig
 
 # Sidebar controls
@@ -85,35 +75,41 @@ if files:
         "Matplotlib",
         "Dataframe"
     ])
-    
-    # Altair plots
-    with tab1:
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Create a list to hold information about the temporary files
+        processed_files = []
         for file in files:
-            if show_filenames:
-                st.subheader(f"File: {file.name}")
-            data, iterations = pre_parse(file)
-            file.seek(0)
-            chart = create_altair_plot(data)
-            st.altair_chart(chart)
-    
-    # Matplotlib plots
-    with tab2:
-        for file in files:
-            if show_filenames:
-                st.subheader(f"File: {file.name}")
-            data, iterations = pre_parse(file)
-            file.seek(0)
-            min_residual = math.pow(10, order_of_magnitude(data.min().min()))
-            max_iter = data.index.max()
-            fig = create_matplotlib_plot(data, width, height, min_residual, max_iter)
-            st.pyplot(fig)
-            plt.close()
-    
-    # Raw data
-    with tab3:
-        for file in files:
-            if show_filenames:
-                st.subheader(f"File: {file.name}")
-            data, iterations = pre_parse(file)
-            file.seek(0)
-            st.dataframe(data)
+            temp_file_path = Path(temp_dir) / file.name
+            with open(temp_file_path, "wb") as f:
+                f.write(file.getvalue())
+            processed_files.append({'name': file.name, 'path': temp_file_path})
+
+        # Altair plots
+        with tab1:
+            for item in processed_files:
+                if show_filenames:
+                    st.subheader(f"File: {item['name']}")
+                data, iterations = fs.pre_parse(item['path'])
+                chart = create_altair_plot(data)
+                st.altair_chart(chart)
+
+        # Matplotlib plots
+        with tab2:
+            for item in processed_files:
+                if show_filenames:
+                    st.subheader(f"File: {item['name']}")
+                data, iterations = fs.pre_parse(item['path'])
+                min_residual = math.pow(10, orp.order_of_magnitude(data.min().min()))
+                max_iter = data.index.max()
+                fig = create_matplotlib_plot(data, width, height, min_residual, max_iter)
+                st.pyplot(fig)
+                plt.close()
+
+        # Raw data
+        with tab3:
+            for item in processed_files:
+                if show_filenames:
+                    st.subheader(f"File: {item['name']}")
+                data, iterations = fs.pre_parse(item['path'])
+                st.dataframe(data)
