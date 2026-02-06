@@ -1,13 +1,14 @@
 [project]
 name = "plot-openfoam-residuals"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "A GitHub Pages-ready single-page app that uploads and plots OpenFOAM residual.dat files fully in the browser."
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "altair>=5.5.0",
-    "matplotlib>=3.10.7",
-    "openfoam-residuals>=0.1.0",
-    "pandas>=2.3.3",
-    "streamlit>=1.51.0",
+keywords = [
+    "openfoam",
+    "cfd",
+    "residuals",
+    "visualization",
+    "github-pages",
 ]
+dependencies = []
