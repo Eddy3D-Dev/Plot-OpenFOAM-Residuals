@@ -160,7 +160,9 @@ function render() {
 
 function renderTabs() {
     for (const button of elements.tabButtons) {
-        button.classList.toggle("is-active", button.dataset.tab === state.activeTab);
+        const isActive = button.dataset.tab === state.activeTab;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-selected", isActive ? "true" : "false");
     }
 
     for (const [tabName, panel] of Object.entries(elements.tabPanels)) {
