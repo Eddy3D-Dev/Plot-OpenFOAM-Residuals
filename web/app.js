@@ -412,17 +412,21 @@ function buildError(message) {
 }
 
 function splitColumns(line) {
-    return line.split(/\s+/).filter((value) => value.length > 0);
+    if (!line) {
+        return [];
+    }
+    // Performance optimization: .trim() followed by split(/\s+/) is much faster
+    // than split(/\s+/) followed by .filter() for thousands of rows.
+    const trimmed = line.trim();
+    return trimmed ? trimmed.split(/\s+/) : [];
 }
 
 function parseNumericValue(value) {
-    if (!value) {
+    if (!value || value === "N/A" || value === "n/a") {
         return Number.NaN;
     }
-    if (value.toUpperCase() === "N/A") {
-        return Number.NaN;
-    }
-    const parsed = Number(value);
+    // Performance optimization: unary plus is faster than Number() wrapper
+    const parsed = +value;
     return Number.isFinite(parsed) ? parsed : Number.NaN;
 }
 
@@ -479,7 +483,9 @@ function formatNumericValue(value) {
     if (absolute !== 0 && (absolute >= 1000 || absolute < 0.001)) {
         return value.toExponential(6);
     }
-    return value.toString();
+    // Performance optimization: string coercion is much faster than .toString()
+    // for large dataframes with thousands of cells.
+    return "" + value;
 }
 
 function sanitizeWholeNumber(value, fallback) {
