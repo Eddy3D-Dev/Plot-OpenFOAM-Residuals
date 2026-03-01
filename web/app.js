@@ -153,9 +153,16 @@ function parseResidualData(rawText) {
 function render() {
     renderTabs();
     renderSummary();
-    renderAltairPanel();
-    renderMatplotlibPanel();
-    renderDataframePanel();
+
+    // Performance optimization: Only render the active panel to avoid
+    // expensive DOM operations and Plotly calls for hidden tabs
+    if (state.activeTab === "altair") {
+        renderAltairPanel();
+    } else if (state.activeTab === "matplotlib") {
+        renderMatplotlibPanel();
+    } else if (state.activeTab === "dataframe") {
+        renderDataframePanel();
+    }
 }
 
 function renderTabs() {
