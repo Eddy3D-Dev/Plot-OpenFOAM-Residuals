@@ -246,12 +246,14 @@ function renderAltairPanel() {
             yaxis: {
                 title: "Residuals",
                 type: "log",
+                exponentformat: "e",
                 gridcolor: "#e4eaed",
             },
         };
 
         Plotly.newPlot(plotHost, traces, layout, {
             responsive: true,
+            displayModeBar: true,
             displaylogo: false,
             modeBarButtonsToRemove: ["lasso2d", "select2d"],
         });
@@ -319,14 +321,17 @@ function renderMatplotlibPanel() {
             yaxis: {
                 title: "Residuals",
                 type: "log",
+                exponentformat: "e",
                 range: [yRangeMin, 0],
                 gridcolor: "#e4eaed",
             },
         };
 
         Plotly.newPlot(plotHost, traces, layout, {
-            staticPlot: true,
-            displayModeBar: false,
+            staticPlot: false,
+            displayModeBar: true,
+            displaylogo: false,
+            modeBarButtons: [["toImage"]],
         });
     }
 }
