@@ -14,6 +14,7 @@ const elements = {
     height: document.getElementById("figure-height"),
     showFilenames: document.getElementById("show-filenames"),
     fileInput: document.getElementById("residual-files"),
+    dropzone: document.getElementById("dropzone"),
     fileSummary: document.getElementById("file-summary"),
     plotSettings: document.getElementById("plot-settings"),
     tabButtons: Array.from(document.querySelectorAll(".tab-button")),
@@ -46,6 +47,26 @@ function bindEvents() {
     elements.fileInput.addEventListener("change", async () => {
         await parseSelectedFiles();
         render();
+    });
+
+    elements.dropzone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        elements.dropzone.classList.add("is-dragover");
+    });
+
+    elements.dropzone.addEventListener("dragleave", (event) => {
+        event.preventDefault();
+        elements.dropzone.classList.remove("is-dragover");
+    });
+
+    elements.dropzone.addEventListener("drop", async (event) => {
+        event.preventDefault();
+        elements.dropzone.classList.remove("is-dragover");
+        if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+            elements.fileInput.files = event.dataTransfer.files;
+            await parseSelectedFiles();
+            render();
+        }
     });
 
     for (const button of elements.tabButtons) {
