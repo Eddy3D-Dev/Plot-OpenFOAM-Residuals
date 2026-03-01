@@ -164,7 +164,8 @@ body {
     transition: background 180ms ease, border-color 180ms ease;
 }
 
-.upload-trigger:hover {
+.upload-trigger:hover,
+.upload-trigger.is-dragover {
     background: linear-gradient(135deg, #eaf2f4, #f3eedf);
     border-color: #7d9ba8;
 }

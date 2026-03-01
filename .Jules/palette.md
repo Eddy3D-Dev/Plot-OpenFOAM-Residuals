@@ -7,3 +7,7 @@
 **Action:** To create accessible custom file inputs, visually hide the input using an `.sr-only` utility class (clipping). Ensure the input comes *before* the label in the DOM, so that keyboard focus styles can be applied to the custom label using the adjacent sibling selector (`input:focus-visible + label`).## 2026-03-01 - Add download buttons and format yaxis
 **Learning:** Plotly log axes use SI prefixes by default (like \mu) which are not standard in CFD residual plots.
 **Action:** Use exponentformat: 'e' to enforce standard scientific notation. Also, to show the download button on a 'static' plot, set staticPlot: false, displayModeBar: true, and limit modeBarButtons to [['toImage']].
+
+## 2026-03-01 - Native drag and drop on file inputs
+**Learning:** When implementing a custom drag and drop area for a file upload, users expect visual feedback. Moreover, the easiest and most robust way to process dropped files and keep the `<input type="file">` synchronized is to directly assign `event.dataTransfer.files` to the `files` property of the input element, which triggers native behaviour properly and respects modern API standards.
+**Action:** Add `dragover`, `dragleave`, and `drop` event listeners on the dropzone element to manage an `.is-dragover` state, and directly assign `dataTransfer.files` to the underlying `input.files` property upon drop.
