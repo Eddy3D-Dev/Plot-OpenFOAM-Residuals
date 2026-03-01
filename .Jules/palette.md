@@ -7,3 +7,7 @@
 **Action:** To create accessible custom file inputs, visually hide the input using an `.sr-only` utility class (clipping). Ensure the input comes *before* the label in the DOM, so that keyboard focus styles can be applied to the custom label using the adjacent sibling selector (`input:focus-visible + label`).## 2026-03-01 - Add download buttons and format yaxis
 **Learning:** Plotly log axes use SI prefixes by default (like \mu) which are not standard in CFD residual plots.
 **Action:** Use exponentformat: 'e' to enforce standard scientific notation. Also, to show the download button on a 'static' plot, set staticPlot: false, displayModeBar: true, and limit modeBarButtons to [['toImage']].
+
+## 2024-10-24 - Conditional UI Elements
+**Learning:** Showing settings or configuration options that do not apply to the currently active view or state can cause user confusion and clutter the interface.
+**Action:** Always conditionally hide UI elements (like plot settings) when they are not relevant to the user's current context (e.g., hiding static plot settings when viewing an interactive plot tab).
