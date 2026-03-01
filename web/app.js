@@ -16,6 +16,7 @@ const elements = {
     fileInput: document.getElementById("residual-files"),
     dropzone: document.getElementById("dropzone"),
     fileSummary: document.getElementById("file-summary"),
+    plotSettings: document.getElementById("plot-settings"),
     tabButtons: Array.from(document.querySelectorAll(".tab-button")),
     tabPanels: {
         altair: document.getElementById("panel-altair"),
@@ -195,6 +196,10 @@ function renderTabs() {
 
     for (const [tabName, panel] of Object.entries(elements.tabPanels)) {
         panel.classList.toggle("is-active", tabName === state.activeTab);
+    }
+
+    if (elements.plotSettings) {
+        elements.plotSettings.style.display = state.activeTab === "matplotlib" ? "block" : "none";
     }
 }
 

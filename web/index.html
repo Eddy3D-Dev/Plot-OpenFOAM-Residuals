@@ -28,24 +28,6 @@
             </p>
         </header>
 
-        <section class="controls panel">
-            <h2>Plot Settings</h2>
-            <div class="controls-grid">
-                <label class="control-field">
-                    <span>Figure Width</span>
-                    <input id="figure-width" type="number" min="1" step="1" value="10">
-                </label>
-                <label class="control-field">
-                    <span>Figure Height</span>
-                    <input id="figure-height" type="number" min="1" step="1" value="4">
-                </label>
-                <label class="control-check">
-                    <input id="show-filenames" type="checkbox">
-                    <span>Show Filenames</span>
-                </label>
-            </div>
-        </section>
-
         <section class="uploader panel">
             <h2>Files</h2>
             <input id="residual-files" class="sr-only" type="file" accept=".dat" multiple>
@@ -63,6 +45,24 @@
             <button class="tab-button is-active" role="tab" aria-selected="true" aria-controls="panel-altair" id="tab-altair" data-tab="altair" type="button">Altair</button>
             <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-matplotlib" id="tab-matplotlib" data-tab="matplotlib" type="button">Matplotlib</button>
             <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-dataframe" id="tab-dataframe" data-tab="dataframe" type="button">Dataframe</button>
+        </section>
+
+        <section id="plot-settings" class="controls panel" style="display: none;">
+            <h2>Plot Settings</h2>
+            <div class="controls-grid">
+                <label class="control-field">
+                    <span>Figure Width</span>
+                    <input id="figure-width" type="number" min="1" step="1" value="10">
+                </label>
+                <label class="control-field">
+                    <span>Figure Height</span>
+                    <input id="figure-height" type="number" min="1" step="1" value="4">
+                </label>
+                <label class="control-check">
+                    <input id="show-filenames" type="checkbox">
+                    <span>Show Filenames</span>
+                </label>
+            </div>
         </section>
 
         <section id="panel-altair" class="tab-panel panel is-active" role="tabpanel" aria-labelledby="tab-altair"></section>
