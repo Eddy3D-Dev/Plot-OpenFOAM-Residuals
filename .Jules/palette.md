@@ -15,3 +15,7 @@
 ## 2024-10-24 - Conditional UI Elements
 **Learning:** Showing settings or configuration options that do not apply to the currently active view or state can cause user confusion and clutter the interface.
 **Action:** Always conditionally hide UI elements (like plot settings) when they are not relevant to the user's current context (e.g., hiding static plot settings when viewing an interactive plot tab).
+
+## 2024-06-15 - Announcing dynamic text updates with aria-live
+**Learning:** Screen readers won't automatically announce text that updates dynamically after a user interaction (like file parsing results or error states).
+**Action:** Always add `aria-live="polite"` to status elements (e.g. `#file-summary`) that update asynchronously, so screen reader users receive important feedback without needing to navigate manually to the changed content.
