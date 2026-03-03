@@ -9,3 +9,7 @@
 ## 2026-03-01 - Optimize JavaScript array mapping/filtering for large arrays
 **Learning:** In operations that process huge arrays (like files with 500k lines), chaining `.slice(1).map().filter()` is disastrous for performance. It iterates over the massive array multiple times and creates several intermediate arrays that max out memory and trigger garbage collection pauses. Pre-allocating the final array to its max expected size and using a single `for` loop to filter and mutate is significantly faster (over 50% speedup).
 **Action:** For loops exceeding ~10k elements, avoid chained declarative array methods. Instead, initialize a pre-allocated array (e.g., `new Array(size)`) and use a single standard `for` loop to manually populate it. Then manually truncate the array to the valid length.
+
+## 2026-03-03 - HTML Table DOM Rendering Bottleneck
+**Learning:** Rendering massive HTML tables directly in the DOM via `document.createElement` for every cell freezes the main thread. A 20k-row table takes ~2000ms+ to render and blocks all UI interaction. String concatenation vs. DOM nodes matters less than the sheer volume of elements being appended to the live document.
+**Action:** Always implement a simple row limit (virtualization/pagination) when rendering raw tabular data containing potentially thousands of rows. Displaying the first ~500 rows is instant (~5ms) and provides the same utility for raw data inspection without freezing the browser.
