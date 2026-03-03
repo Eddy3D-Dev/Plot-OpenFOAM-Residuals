@@ -411,7 +411,13 @@ function renderDataframePanel() {
         table.appendChild(thead);
 
         const tbody = document.createElement("tbody");
-        for (let index = 0; index < file.timeValues.length; index += 1) {
+
+        // Performance optimization: Render only a subset of rows to prevent
+        // the main thread from freezing when visualizing huge residual files.
+        const ROW_LIMIT = 500;
+        const renderCount = Math.min(ROW_LIMIT, file.timeValues.length);
+
+        for (let index = 0; index < renderCount; index += 1) {
             const tr = document.createElement("tr");
 
             const timeCell = document.createElement("td");
@@ -424,6 +430,19 @@ function renderDataframePanel() {
                 tr.appendChild(td);
             }
 
+            tbody.appendChild(tr);
+        }
+
+        if (file.timeValues.length > renderCount) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = file.columns.length + 1;
+            td.textContent = `... and ${file.timeValues.length - renderCount} more rows (hidden for performance)`;
+            td.style.textAlign = "center";
+            td.style.fontStyle = "italic";
+            td.style.padding = "1rem";
+            td.style.color = "var(--text-secondary)";
+            tr.appendChild(td);
             tbody.appendChild(tr);
         }
 
