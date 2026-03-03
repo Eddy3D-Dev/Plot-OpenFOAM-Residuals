@@ -69,7 +69,21 @@ function bindEvents() {
         }
     });
 
-    for (const button of elements.tabButtons) {
+    elements.tabButtons.forEach((button, index) => {
+        button.addEventListener("keydown", (e) => {
+            let newIndex = index;
+            if (e.key === "ArrowRight") {
+                newIndex = (index + 1) % elements.tabButtons.length;
+            } else if (e.key === "ArrowLeft") {
+                newIndex = (index - 1 + elements.tabButtons.length) % elements.tabButtons.length;
+            }
+            if (newIndex !== index) {
+                e.preventDefault();
+                elements.tabButtons[newIndex].focus();
+                elements.tabButtons[newIndex].click();
+            }
+        });
+
         button.addEventListener("click", () => {
             const selectedTab = button.dataset.tab;
             if (!TAB_NAMES.includes(selectedTab)) {
@@ -78,7 +92,7 @@ function bindEvents() {
             state.activeTab = selectedTab;
             render();
         });
-    }
+    });
 }
 
 async function parseSelectedFiles() {
@@ -202,6 +216,7 @@ function renderTabs() {
         const isActive = button.dataset.tab === state.activeTab;
         button.classList.toggle("is-active", isActive);
         button.setAttribute("aria-selected", isActive ? "true" : "false");
+        button.setAttribute("tabindex", isActive ? "0" : "-1");
     }
 
     for (const [tabName, panel] of Object.entries(elements.tabPanels)) {
