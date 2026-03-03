@@ -414,7 +414,7 @@ function renderDataframePanel() {
 
         // Performance optimization: Render only a subset of rows to prevent
         // the main thread from freezing when visualizing huge residual files.
-        const ROW_LIMIT = 500;
+        const ROW_LIMIT = 3000;
         const renderCount = Math.min(ROW_LIMIT, file.timeValues.length);
 
         for (let index = 0; index < renderCount; index += 1) {
