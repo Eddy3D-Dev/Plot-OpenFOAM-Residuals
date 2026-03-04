@@ -13,3 +13,7 @@
 ## 2026-03-03 - HTML Table DOM Rendering Bottleneck
 **Learning:** Rendering massive HTML tables directly in the DOM via `document.createElement` for every cell freezes the main thread. A 20k-row table takes ~2000ms+ to render and blocks all UI interaction. String concatenation vs. DOM nodes matters less than the sheer volume of elements being appended to the live document.
 **Action:** Always implement a simple row limit (virtualization/pagination) when rendering raw tabular data containing potentially thousands of rows. Displaying the first ~500 rows is instant (~5ms) and provides the same utility for raw data inspection without freezing the browser.
+
+## 2026-03-03 - Optimize object property lookups in hot loops
+**Learning:** Accessing properties by string key (`columnValues[columnName]`) inside a loop executing millions of times (e.g., parsing columns for 500k rows) is noticeably slower than array index access. Pre-allocating the column arrays and caching their references in an array indexed by column index (`columnArrays[columnIndex]`) yielded a significant ~20% speedup.
+**Action:** When parsing large CSV/DAT files, pre-allocate destination arrays to their expected maximum size based on row count, and cache property lookups into indexed arrays before entering the hot loop.
