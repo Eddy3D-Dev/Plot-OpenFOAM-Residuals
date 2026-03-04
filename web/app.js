@@ -412,6 +412,8 @@ function renderDataframePanel() {
 
         const tableWrapper = document.createElement("div");
         tableWrapper.className = "table-wrapper";
+        tableWrapper.tabIndex = 0;
+        tableWrapper.setAttribute("aria-label", "Data table");
         const table = document.createElement("table");
 
         const headerRow = document.createElement("tr");
@@ -419,6 +421,7 @@ function renderDataframePanel() {
         for (const title of headers) {
             const th = document.createElement("th");
             th.textContent = title;
+            th.setAttribute("scope", "col");
             headerRow.appendChild(th);
         }
         const thead = document.createElement("thead");
