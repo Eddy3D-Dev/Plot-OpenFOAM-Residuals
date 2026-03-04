@@ -19,3 +19,7 @@
 ## 2024-06-15 - Announcing dynamic text updates with aria-live
 **Learning:** Screen readers won't automatically announce text that updates dynamically after a user interaction (like file parsing results or error states).
 **Action:** Always add `aria-live="polite"` to status elements (e.g. `#file-summary`) that update asynchronously, so screen reader users receive important feedback without needing to navigate manually to the changed content.
+
+## 2026-03-04 - Dataframe Keyboard Scroll Accessibility
+**Learning:** Tables nested in scrollable containers (`overflow: auto`) are inaccessible to keyboard users because they cannot be focused to scroll unless they contain focusable elements or the container itself is focusable. This pattern is common for responsive tables but often misses keyboard accessibility.
+**Action:** Always add `tabindex="0"`, a visible focus state, and an appropriate `aria-label` to scrollable wrapper elements containing tables so keyboard users can scroll through the data.
