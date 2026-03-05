@@ -23,3 +23,7 @@
 ## 2026-03-04 - Dataframe Keyboard Scroll Accessibility
 **Learning:** Tables nested in scrollable containers (`overflow: auto`) are inaccessible to keyboard users because they cannot be focused to scroll unless they contain focusable elements or the container itself is focusable. This pattern is common for responsive tables but often misses keyboard accessibility.
 **Action:** Always add `tabindex="0"`, a visible focus state, and an appropriate `aria-label` to scrollable wrapper elements containing tables so keyboard users can scroll through the data.
+
+## 2026-03-05 - File Parsing UI Feedback Blocked by Main Thread
+**Learning:** Browsers defer UI updates when the main thread is blocked by synchronous data processing (like parsing large residual files in a vanilla JS hot loop). Even if the file selection is in an async event handler, the synchronous parsing freezes the UI, causing any updated text (like "Loading...") to not render if the thread isn't yielded first.
+**Action:** Always insert a small async yield (like `await new Promise(r => setTimeout(r, 10))`) after setting a loading message and before kicking off heavy synchronous processing to ensure the user gets immediate feedback.
