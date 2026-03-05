@@ -45,6 +45,8 @@ function bindEvents() {
     });
 
     elements.fileInput.addEventListener("change", async () => {
+        elements.fileSummary.textContent = "Parsing files...";
+        await new Promise((resolve) => setTimeout(resolve, 10)); // Allow UI to paint before blocking thread
         await parseSelectedFiles();
         render();
     });
@@ -64,6 +66,8 @@ function bindEvents() {
         elements.dropzone.classList.remove("is-dragover");
         if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
             elements.fileInput.files = event.dataTransfer.files;
+            elements.fileSummary.textContent = "Parsing files...";
+            await new Promise((resolve) => setTimeout(resolve, 10)); // Allow UI to paint before blocking thread
             await parseSelectedFiles();
             render();
         }
