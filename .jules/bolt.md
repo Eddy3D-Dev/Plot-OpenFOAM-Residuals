@@ -17,3 +17,7 @@
 ## 2026-03-03 - Optimize object property lookups in hot loops
 **Learning:** Accessing properties by string key (`columnValues[columnName]`) inside a loop executing millions of times (e.g., parsing columns for 500k rows) is noticeably slower than array index access. Pre-allocating the column arrays and caching their references in an array indexed by column index (`columnArrays[columnIndex]`) yielded a significant ~20% speedup.
 **Action:** When parsing large CSV/DAT files, pre-allocate destination arrays to their expected maximum size based on row count, and cache property lookups into indexed arrays before entering the hot loop.
+
+## 2026-03-05 - Avoid Global String Operations on Massive Text
+**Learning:** Calling `.replaceAll("#", "")` on the entire 100MB+ raw text string of a residual file before splitting it into lines creates massive intermediate string copies, significantly inflating memory usage and processing time in the browser. Furthermore, naively extracting regex to precompiled constants like `/\s+/` provides no measurable performance benefit in modern V8 engines because they already compile and cache regex literals automatically.
+**Action:** When parsing huge files, split the raw text into an array of lines first, and then apply string replacement operations (like removing `#`) strictly on a line-by-line basis within the parsing loop. Avoid micro-optimizing regex literals unless profiling proves an issue.

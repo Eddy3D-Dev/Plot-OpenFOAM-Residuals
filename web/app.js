@@ -126,16 +126,22 @@ async function parseSelectedFiles() {
 }
 
 function parseResidualData(rawText) {
-    const cleanedRows = rawText.replaceAll("#", "").split(/\r?\n/);
+    // Performance optimization: Avoid global replaceAll("#", "") before split, which requires
+    // allocating a massive string copy for huge files. Split first, then replace on demand.
+    const rawRows = rawText.split(/\r?\n/);
 
     // Performance optimization: Avoid intermediate arrays created by slice().map().filter().
     // Pre-allocating the array and truncating it is ~50% faster for large datasets.
-    const rowCount = cleanedRows.length;
+    const rowCount = rawRows.length;
     const parsedRows = new Array(rowCount > 0 ? rowCount - 1 : 0);
     let validRowCount = 0;
 
     for (let i = 1; i < rowCount; i += 1) { // i = 1 matches pandas skiprows=[0]
-        const trimmed = cleanedRows[i].trim();
+        let line = rawRows[i];
+        if (line.includes("#")) {
+            line = line.replaceAll("#", "");
+        }
+        const trimmed = line.trim();
         if (trimmed.length > 0) {
             parsedRows[validRowCount++] = trimmed;
         }
