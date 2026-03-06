@@ -44,6 +44,11 @@ function bindEvents() {
         render();
     });
 
+    elements.fileInput.addEventListener("click", (e) => {
+        // Reset the value so that selecting the same file again triggers the "change" event
+        e.target.value = "";
+    });
+
     elements.fileInput.addEventListener("change", async () => {
         elements.fileSummary.textContent = "Parsing files...";
         await new Promise((resolve) => setTimeout(resolve, 10)); // Allow UI to paint before blocking thread
@@ -275,10 +280,13 @@ function renderSummary() {
 
     const okCount = state.files.filter((file) => file.status === "ok").length;
     const errorCount = state.files.length - okCount;
+
+    const fileWord = state.files.length === 1 ? "file" : "files";
+
     if (errorCount > 0) {
-        elements.fileSummary.textContent = `${state.files.length} files selected: ${okCount} parsed, ${errorCount} failed.`;
+        elements.fileSummary.textContent = `${state.files.length} ${fileWord} selected: ${okCount} parsed, ${errorCount} failed.`;
     } else {
-        elements.fileSummary.textContent = `${state.files.length} files selected and parsed.`;
+        elements.fileSummary.textContent = `${state.files.length} ${fileWord} selected and parsed.`;
     }
 }
 
@@ -452,7 +460,7 @@ function renderDataframePanel() {
         const tableWrapper = document.createElement("div");
         tableWrapper.className = "table-wrapper";
         tableWrapper.tabIndex = 0;
-        tableWrapper.setAttribute("aria-label", "Data table");
+        tableWrapper.setAttribute("aria-label", `Data table for ${file.name}`);
         const table = document.createElement("table");
 
         const headerRow = document.createElement("tr");

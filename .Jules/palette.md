@@ -27,6 +27,15 @@
 ## 2026-03-05 - File Parsing UI Feedback Blocked by Main Thread
 **Learning:** Browsers defer UI updates when the main thread is blocked by synchronous data processing (like parsing large residual files in a vanilla JS hot loop). Even if the file selection is in an async event handler, the synchronous parsing freezes the UI, causing any updated text (like "Loading...") to not render if the thread isn't yielded first.
 **Action:** Always insert a small async yield (like `await new Promise(r => setTimeout(r, 10))`) after setting a loading message and before kicking off heavy synchronous processing to ensure the user gets immediate feedback.
+
 ## 2026-03-05 - Contextual defaults across UI tabs and App state protection from accidental file drops
 **Learning:** For apps with hidden settings panels, contextual defaults (like showing filenames when multiple files are uploaded) provide necessary context when toggles aren't visible. Furthermore, in SPAs handling file uploads, failing to protect the whole window against drag-and-drop actions can result in the browser navigating away from the app when a user misses the dropzone, destroying their current state.
 **Action:** Automatically apply necessary context (e.g., showing filenames) based on the current state (e.g., number of files) rather than relying solely on user toggles, especially when those toggles are hidden. Always add global `dragover` and `drop` event listeners with `event.preventDefault()` to prevent accidental navigation when dropping files.
+
+## 2026-03-06 - Fixing the "Dead Click" File Re-upload Bug
+**Learning:** When using `<input type="file">`, if a user uploads a file, modifies it locally, and attempts to re-upload the same file, the native `change` event will not fire because the file path string hasn't changed. This creates a frustrating "dead click" experience where the user interaction is silently ignored.
+**Action:** Always add a `click` event listener to file inputs that resets the input's value (`e.target.value = ""`). This ensures that subsequent selections of the exact same file will correctly trigger the `change` event and process the updated file contents.
+
+## 2026-03-06 - Dynamic and Descriptive ARIA Labels for Iterated Components
+**Learning:** When rendering multiple similar components (like tables) from a list of items (like uploaded files), using a static `aria-label` (e.g., "Data table") results in poor accessibility because screen reader users cannot distinguish between them.
+**Action:** Always inject contextual information into the `aria-label` of dynamically iterated components. For example, include the associated file name (`aria-label="Data table for ${file.name}"`) to provide critical context for users relying on assistive technologies.
