@@ -73,6 +73,14 @@ function bindEvents() {
         }
     });
 
+    // Prevent accidental file drops from navigating away from the app
+    window.addEventListener("dragover", (event) => {
+        event.preventDefault();
+    });
+    window.addEventListener("drop", (event) => {
+        event.preventDefault();
+    });
+
     elements.tabButtons.forEach((button, index) => {
         button.addEventListener("keydown", (e) => {
             let newIndex = index;
@@ -506,7 +514,7 @@ function buildCard(file) {
     const card = document.createElement("article");
     card.className = "result-card";
 
-    if (state.showFilenames) {
+    if (state.showFilenames || state.files.length > 1) {
         const title = document.createElement("h3");
         title.textContent = file.name;
         card.appendChild(title);
