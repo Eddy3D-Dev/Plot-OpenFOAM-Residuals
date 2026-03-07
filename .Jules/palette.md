@@ -39,3 +39,6 @@
 ## 2026-03-06 - Dynamic and Descriptive ARIA Labels for Iterated Components
 **Learning:** When rendering multiple similar components (like tables) from a list of items (like uploaded files), using a static `aria-label` (e.g., "Data table") results in poor accessibility because screen reader users cannot distinguish between them.
 **Action:** Always inject contextual information into the `aria-label` of dynamically iterated components. For example, include the associated file name (`aria-label="Data table for ${file.name}"`) to provide critical context for users relying on assistive technologies.
+## 2026-03-07 - Clarifying UI state when contextual defaults override user toggles
+**Learning:** When contextual defaults force a specific state for a UI toggle (like forcing filenames to display when comparing multiple files), leaving the toggle interactive but non-functional is confusing for users. They might attempt to change the setting and assume the app is broken when it doesn't respond.
+**Action:** Always visually disable (`opacity: 0.5`, `cursor: not-allowed`), functionally disable (`disabled=true`, `aria-disabled="true"`), and explain (`title="..."`) the disabled state of UI toggles that are overridden by contextual defaults. This ensures users understand why they cannot interact with the control.

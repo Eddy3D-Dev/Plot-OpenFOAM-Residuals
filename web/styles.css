@@ -148,6 +148,15 @@ body {
     cursor: pointer;
 }
 
+.control-check.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.control-check.is-disabled input {
+    cursor: not-allowed;
+}
+
 .control-check input {
     inline-size: 1.05rem;
     block-size: 1.05rem;
