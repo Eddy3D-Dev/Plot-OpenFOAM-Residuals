@@ -269,6 +269,28 @@ function renderTabs() {
 
     if (elements.plotSettings) {
         elements.plotSettings.style.display = state.activeTab === "matplotlib" ? "block" : "none";
+
+        const forceShow = state.files.length > 1;
+        const checkbox = elements.showFilenames;
+        const container = checkbox.closest('.control-check');
+
+        if (forceShow) {
+            checkbox.checked = true;
+            checkbox.disabled = true;
+            checkbox.setAttribute("aria-disabled", "true");
+            if (container) {
+                container.classList.add("is-disabled");
+                container.title = "Filenames are always shown when comparing multiple files";
+            }
+        } else {
+            checkbox.checked = state.showFilenames;
+            checkbox.disabled = false;
+            checkbox.removeAttribute("aria-disabled");
+            if (container) {
+                container.classList.remove("is-disabled");
+                container.title = "";
+            }
+        }
     }
 }
 
