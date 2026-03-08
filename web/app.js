@@ -307,9 +307,13 @@ function renderSummary() {
 
     if (errorCount > 0) {
         elements.fileSummary.textContent = `${state.files.length} ${fileWord} selected: ${okCount} parsed, ${errorCount} failed.`;
+    } else if (state.files.length === 1) {
+        elements.fileSummary.textContent = `1 file selected: ${state.files[0].name}`;
     } else {
         elements.fileSummary.textContent = `${state.files.length} ${fileWord} selected and parsed.`;
     }
+
+    elements.fileSummary.title = state.files.map(f => f.name).join('\n');
 }
 
 function renderAltairPanel() {
@@ -528,7 +532,7 @@ function renderDataframePanel() {
             td.style.textAlign = "center";
             td.style.fontStyle = "italic";
             td.style.padding = "1rem";
-            td.style.color = "var(--text-secondary)";
+            td.style.color = "var(--muted)";
             tr.appendChild(td);
             tbody.appendChild(tr);
         }

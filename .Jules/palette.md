@@ -42,3 +42,7 @@
 ## 2026-03-07 - Clarifying UI state when contextual defaults override user toggles
 **Learning:** When contextual defaults force a specific state for a UI toggle (like forcing filenames to display when comparing multiple files), leaving the toggle interactive but non-functional is confusing for users. They might attempt to change the setting and assume the app is broken when it doesn't respond.
 **Action:** Always visually disable (`opacity: 0.5`, `cursor: not-allowed`), functionally disable (`disabled=true`, `aria-disabled="true"`), and explain (`title="..."`) the disabled state of UI toggles that are overridden by contextual defaults. This ensures users understand why they cannot interact with the control.
+
+## 2024-05-24 - File Upload Context
+**Learning:** Generic success messages ("1 file selected") lack confidence. Users need exact filename confirmation to ensure they uploaded the correct file, especially when dealing with similar-looking scientific data files.
+**Action:** Always include the specific filename in single-file upload summaries, and provide a comprehensive list (e.g., via tooltip) for multi-file uploads.
