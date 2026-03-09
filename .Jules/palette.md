@@ -46,3 +46,7 @@
 ## 2024-05-24 - File Upload Context
 **Learning:** Generic success messages ("1 file selected") lack confidence. Users need exact filename confirmation to ensure they uploaded the correct file, especially when dealing with similar-looking scientific data files.
 **Action:** Always include the specific filename in single-file upload summaries, and provide a comprehensive list (e.g., via tooltip) for multi-file uploads.
+
+## 2026-03-09 - Missing Destructive Actions for File Inputs
+**Learning:** In Single Page Applications (SPAs) handling file uploads, failing to provide a way to clear the uploaded files forces users to hard-refresh the page to reset the state, which unnecessarily wipes out their other UI configurations (like plot settings).
+**Action:** Always provide a clear/reset button alongside file upload summaries to allow users to gracefully clear their selection without losing the entire application state.

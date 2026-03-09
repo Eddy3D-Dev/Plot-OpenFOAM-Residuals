@@ -16,6 +16,7 @@ const elements = {
     fileInput: document.getElementById("residual-files"),
     dropzone: document.getElementById("dropzone"),
     fileSummary: document.getElementById("file-summary"),
+    clearFiles: document.getElementById("clear-files"),
     plotSettings: document.getElementById("plot-settings"),
     tabButtons: Array.from(document.querySelectorAll(".tab-button")),
     tabPanels: {
@@ -41,6 +42,12 @@ function bindEvents() {
 
     elements.showFilenames.addEventListener("change", () => {
         state.showFilenames = elements.showFilenames.checked;
+        render();
+    });
+
+    elements.clearFiles.addEventListener("click", () => {
+        state.files = [];
+        elements.fileInput.value = "";
         render();
     });
 
@@ -297,9 +304,11 @@ function renderTabs() {
 function renderSummary() {
     if (state.files.length === 0) {
         elements.fileSummary.textContent = "No files selected.";
+        elements.clearFiles.hidden = true;
         return;
     }
 
+    elements.clearFiles.hidden = false;
     const okCount = state.files.filter((file) => file.status === "ok").length;
     const errorCount = state.files.length - okCount;
 
