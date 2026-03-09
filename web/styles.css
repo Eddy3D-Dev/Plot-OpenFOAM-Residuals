@@ -205,11 +205,48 @@ body {
     font-size: 0.9rem;
 }
 
+.summary-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2rem;
+}
+
 .file-summary {
     margin: 0;
     font-family: "IBM Plex Mono", monospace;
     font-size: 0.88rem;
     color: #295465;
+}
+
+.clear-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #f4ccc0;
+    border-radius: 6px;
+    background: var(--danger-bg);
+    color: var(--danger-ink);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 150ms ease, opacity 150ms ease;
+}
+
+.clear-button[hidden] {
+    display: none !important;
+}
+
+.clear-button:hover {
+    background: #fae1da;
+}
+
+.clear-button:focus-visible {
+    outline: 2px solid var(--danger-ink);
+    outline-offset: 2px;
 }
 
 .tab-controls {

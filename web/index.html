@@ -38,7 +38,13 @@
             <p class="uploader-help">
                 Files are parsed locally in your browser and never uploaded to a server.
             </p>
-            <p id="file-summary" class="file-summary" aria-live="polite">No files selected.</p>
+            <div class="summary-container">
+                <p id="file-summary" class="file-summary" aria-live="polite">No files selected.</p>
+                <button id="clear-files" class="clear-button" type="button" hidden aria-label="Clear all files">
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Clear
+                </button>
+            </div>
         </section>
 
         <section class="tab-controls panel" role="tablist" aria-label="Result views">
