@@ -45,10 +45,29 @@ function bindEvents() {
         render();
     });
 
+    let clearConfirmTimeout;
     elements.clearFiles.addEventListener("click", () => {
-        state.files = [];
-        elements.fileInput.value = "";
-        render();
+        const isConfirming = elements.clearFiles.classList.contains("is-confirming");
+        const span = elements.clearFiles.querySelector("span");
+
+        if (isConfirming) {
+            clearTimeout(clearConfirmTimeout);
+            elements.clearFiles.classList.remove("is-confirming");
+            span.textContent = "Clear";
+            elements.clearFiles.setAttribute("aria-label", "Clear all files");
+            state.files = [];
+            elements.fileInput.value = "";
+            render();
+        } else {
+            elements.clearFiles.classList.add("is-confirming");
+            span.textContent = "Are you sure?";
+            elements.clearFiles.setAttribute("aria-label", "Confirm clearing all files");
+            clearConfirmTimeout = setTimeout(() => {
+                elements.clearFiles.classList.remove("is-confirming");
+                span.textContent = "Clear";
+                elements.clearFiles.setAttribute("aria-label", "Clear all files");
+            }, 3000);
+        }
     });
 
     elements.fileInput.addEventListener("click", (e) => {
