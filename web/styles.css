@@ -249,6 +249,16 @@ body {
     outline-offset: 2px;
 }
 
+.clear-button.is-confirming {
+    background: var(--danger-ink);
+    color: #ffffff;
+    border-color: var(--danger-ink);
+}
+
+.clear-button.is-confirming:hover {
+    background: #8b3a20;
+}
+
 .tab-controls {
     display: flex;
     gap: 0.6rem;

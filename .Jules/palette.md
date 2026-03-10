@@ -50,3 +50,7 @@
 ## 2026-03-09 - Missing Destructive Actions for File Inputs
 **Learning:** In Single Page Applications (SPAs) handling file uploads, failing to provide a way to clear the uploaded files forces users to hard-refresh the page to reset the state, which unnecessarily wipes out their other UI configurations (like plot settings).
 **Action:** Always provide a clear/reset button alongside file upload summaries to allow users to gracefully clear their selection without losing the entire application state.
+
+## 2026-03-10 - Inline Two-Step Confirmation for Destructive Actions
+**Learning:** For clear/delete actions, native `window.confirm()` browser alerts provide safety but are jarring, visually disjointed from the app, and poor for UX.
+**Action:** Always prefer inline two-step confirmation (e.g., first click changes button to "Are you sure?" with `.is-confirming` class, second click executes action). Include a short timeout (e.g., 3000ms) to automatically revert the button to its initial state if the user reconsiders, and ensure ARIA labels are updated to keep screen readers informed of the current step.
