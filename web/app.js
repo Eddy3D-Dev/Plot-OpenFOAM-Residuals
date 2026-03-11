@@ -70,6 +70,17 @@ function bindEvents() {
         }
     });
 
+    elements.clearFiles.addEventListener("blur", () => {
+        const isConfirming = elements.clearFiles.classList.contains("is-confirming");
+        if (isConfirming) {
+            clearTimeout(clearConfirmTimeout);
+            const span = elements.clearFiles.querySelector("span");
+            elements.clearFiles.classList.remove("is-confirming");
+            span.textContent = "Clear";
+            elements.clearFiles.setAttribute("aria-label", "Clear all files");
+        }
+    });
+
     elements.fileInput.addEventListener("click", (e) => {
         // Reset the value so that selecting the same file again triggers the "change" event
         e.target.value = "";
