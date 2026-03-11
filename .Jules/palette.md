@@ -54,3 +54,7 @@
 ## 2026-03-10 - Inline Two-Step Confirmation for Destructive Actions
 **Learning:** For clear/delete actions, native `window.confirm()` browser alerts provide safety but are jarring, visually disjointed from the app, and poor for UX.
 **Action:** Always prefer inline two-step confirmation (e.g., first click changes button to "Are you sure?" with `.is-confirming` class, second click executes action). Include a short timeout (e.g., 3000ms) to automatically revert the button to its initial state if the user reconsiders, and ensure ARIA labels are updated to keep screen readers informed of the current step.
+
+## 2026-03-11 - Canceling Destructive Confirmations on Blur
+**Learning:** While inline two-step confirmations (like clicking a button twice to "Clear") are great for UX, leaving the button in the "Are you sure?" dangerous state until a timer expires creates user anxiety if they tab away or click elsewhere to abort the action.
+**Action:** Always add a `blur` event listener to inline confirmation buttons that immediately reverts the button to its safe, default state (clearing the timeout, removing danger classes, and resetting `aria-label`) the moment it loses focus.
