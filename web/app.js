@@ -332,9 +332,12 @@ function renderTabs() {
 }
 
 function renderSummary() {
+    const baseTitle = "Plot OpenFOAM Residuals";
+
     if (state.files.length === 0) {
         elements.fileSummary.textContent = "No files selected.";
         elements.clearFiles.hidden = true;
+        document.title = baseTitle;
         return;
     }
 
@@ -343,16 +346,21 @@ function renderSummary() {
     const errorCount = state.files.length - okCount;
 
     const fileWord = state.files.length === 1 ? "file" : "files";
+    let newTitle = baseTitle;
 
     if (errorCount > 0) {
         elements.fileSummary.textContent = `${state.files.length} ${fileWord} selected: ${okCount} parsed, ${errorCount} failed.`;
+        newTitle = `⚠️ Error - ${newTitle}`;
     } else if (state.files.length === 1) {
         elements.fileSummary.textContent = `1 file selected: ${state.files[0].name}`;
+        newTitle = `${state.files[0].name} - ${newTitle}`;
     } else {
         elements.fileSummary.textContent = `${state.files.length} ${fileWord} selected and parsed.`;
+        newTitle = `(${state.files.length}) Files - ${newTitle}`;
     }
 
     elements.fileSummary.title = state.files.map(f => f.name).join('\n');
+    document.title = newTitle;
 }
 
 function renderAltairPanel() {
