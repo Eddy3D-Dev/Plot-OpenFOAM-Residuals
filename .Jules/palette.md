@@ -58,3 +58,7 @@
 ## 2026-03-11 - Canceling Destructive Confirmations on Blur
 **Learning:** While inline two-step confirmations (like clicking a button twice to "Clear") are great for UX, leaving the button in the "Are you sure?" dangerous state until a timer expires creates user anxiety if they tab away or click elsewhere to abort the action.
 **Action:** Always add a `blur` event listener to inline confirmation buttons that immediately reverts the button to its safe, default state (clearing the timeout, removing danger classes, and resetting `aria-label`) the moment it loses focus.
+
+## 2026-03-12 - Dynamic Document Titles for Contextual Awareness
+**Learning:** In a Single Page Application (SPA), the `document.title` often remains static because there are no full page reloads. When users open multiple browser tabs for different sessions or datasets, a static title makes it impossible to distinguish between them, leading to a frustrating experience of "tab hunting".
+**Action:** Always dynamically update the `document.title` to reflect the current state of the application. For file-based apps, prepend the uploaded filename or the number of files selected to the base title. Use visual cues like "⚠️" to indicate error states, allowing users to monitor status even when the tab is inactive.

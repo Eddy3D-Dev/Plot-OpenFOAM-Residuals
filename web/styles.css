@@ -382,6 +382,10 @@ th {
     z-index: 1;
 }
 
+tbody tr:hover {
+    background-color: var(--tab-idle);
+}
+
 noscript {
     display: block;
     margin: 1rem auto 0;
