@@ -62,3 +62,7 @@
 ## 2026-03-12 - Dynamic Document Titles for Contextual Awareness
 **Learning:** In a Single Page Application (SPA), the `document.title` often remains static because there are no full page reloads. When users open multiple browser tabs for different sessions or datasets, a static title makes it impossible to distinguish between them, leading to a frustrating experience of "tab hunting".
 **Action:** Always dynamically update the `document.title` to reflect the current state of the application. For file-based apps, prepend the uploaded filename or the number of files selected to the base title. Use visual cues like "⚠️" to indicate error states, allowing users to monitor status even when the tab is inactive.
+
+## 2026-03-13 - App-Wide Drag and Drop Zones
+**Learning:** In SPAs that handle file uploads, users often miss the specific designated dropzone by a few pixels, causing the browser to either ignore the drop or, worse, navigate away from the app. A small target area creates a frustrating and fragile user experience.
+**Action:** Always bind `dragover`, `dragleave`, and `drop` event listeners to the global `window` object instead of just the visual dropzone container. This converts the entire application into an active target area, gracefully capturing dropped files anywhere on the page while still visually highlighting the primary dropzone indicator.
