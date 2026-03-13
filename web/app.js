@@ -93,17 +93,21 @@ function bindEvents() {
         render();
     });
 
-    elements.dropzone.addEventListener("dragover", (event) => {
+    // Allow dropping files anywhere on the window
+    window.addEventListener("dragover", (event) => {
         event.preventDefault();
         elements.dropzone.classList.add("is-dragover");
     });
 
-    elements.dropzone.addEventListener("dragleave", (event) => {
+    window.addEventListener("dragleave", (event) => {
         event.preventDefault();
-        elements.dropzone.classList.remove("is-dragover");
+        // Remove highlight only when the cursor leaves the browser window
+        if (event.relatedTarget === null) {
+            elements.dropzone.classList.remove("is-dragover");
+        }
     });
 
-    elements.dropzone.addEventListener("drop", async (event) => {
+    window.addEventListener("drop", async (event) => {
         event.preventDefault();
         elements.dropzone.classList.remove("is-dragover");
         if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
@@ -113,14 +117,6 @@ function bindEvents() {
             await parseSelectedFiles();
             render();
         }
-    });
-
-    // Prevent accidental file drops from navigating away from the app
-    window.addEventListener("dragover", (event) => {
-        event.preventDefault();
-    });
-    window.addEventListener("drop", (event) => {
-        event.preventDefault();
     });
 
     elements.tabButtons.forEach((button, index) => {
