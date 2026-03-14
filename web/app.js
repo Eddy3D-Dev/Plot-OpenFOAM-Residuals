@@ -58,6 +58,7 @@ function bindEvents() {
             state.files = [];
             elements.fileInput.value = "";
             render();
+            elements.fileInput.focus();
         } else {
             elements.clearFiles.classList.add("is-confirming");
             span.textContent = "Are you sure?";
