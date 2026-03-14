@@ -66,3 +66,6 @@
 ## 2026-03-13 - App-Wide Drag and Drop Zones
 **Learning:** In SPAs that handle file uploads, users often miss the specific designated dropzone by a few pixels, causing the browser to either ignore the drop or, worse, navigate away from the app. A small target area creates a frustrating and fragile user experience.
 **Action:** Always bind `dragover`, `dragleave`, and `drop` event listeners to the global `window` object instead of just the visual dropzone container. This converts the entire application into an active target area, gracefully capturing dropped files anywhere on the page while still visually highlighting the primary dropzone indicator.
+## 2026-03-14 - Prevent Focus Loss on Destructive Action
+**Learning:** When a destructive UI action (like a 'Clear' button) removes the currently focused element from the DOM (e.g. by setting `hidden=true`), keyboard focus is lost and resets to the `<body>`, creating a poor navigation experience.
+**Action:** Always explicitly redirect focus to the next logical element (such as the primary file input) immediately after hiding or removing an interactive element.
