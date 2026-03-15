@@ -69,3 +69,7 @@
 ## 2026-03-14 - Prevent Focus Loss on Destructive Action
 **Learning:** When a destructive UI action (like a 'Clear' button) removes the currently focused element from the DOM (e.g. by setting `hidden=true`), keyboard focus is lost and resets to the `<body>`, creating a poor navigation experience.
 **Action:** Always explicitly redirect focus to the next logical element (such as the primary file input) immediately after hiding or removing an interactive element.
+
+## 2026-03-15 - Fully Accessible Tabs
+**Learning:** Implementing arrow key navigation for tabs isn't enough; W3C APG patterns require Home/End key support to jump to boundaries, and making the `tabpanel` itself focusable (`tabindex="0"`) is critical so keyboard users can Tab directly from the tablist into the panel content.
+**Action:** When building custom tab components, always implement full APG keyboard bindings (Arrow keys + Home/End) and ensure the associated panel is focusable to maintain a logical tab order.
