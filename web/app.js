@@ -127,6 +127,10 @@ function bindEvents() {
                 newIndex = (index + 1) % elements.tabButtons.length;
             } else if (e.key === "ArrowLeft") {
                 newIndex = (index - 1 + elements.tabButtons.length) % elements.tabButtons.length;
+            } else if (e.key === "Home") {
+                newIndex = 0;
+            } else if (e.key === "End") {
+                newIndex = elements.tabButtons.length - 1;
             }
             if (newIndex !== index) {
                 e.preventDefault();
