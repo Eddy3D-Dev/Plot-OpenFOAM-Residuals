@@ -73,3 +73,7 @@
 ## 2026-03-15 - Fully Accessible Tabs
 **Learning:** Implementing arrow key navigation for tabs isn't enough; W3C APG patterns require Home/End key support to jump to boundaries, and making the `tabpanel` itself focusable (`tabindex="0"`) is critical so keyboard users can Tab directly from the tablist into the panel content.
 **Action:** When building custom tab components, always implement full APG keyboard bindings (Arrow keys + Home/End) and ensure the associated panel is focusable to maintain a logical tab order.
+
+## 2026-03-16 - Immediate announcement for dynamic inline errors
+**Learning:** When generating inline error elements dynamically (e.g. per-file errors after batch upload), screen readers may fail to announce the specific error cause to the user since they were not present on load. Adding `role="alert"` to the injected error container natively prompts immediate reading by assistive tech.
+**Action:** Always include `role="alert"` or `aria-live="assertive"` on dynamically injected error messages (like those appended to file cards) so that users get immediate, specific feedback about failures, instead of relying solely on the general aria-live status summary.
