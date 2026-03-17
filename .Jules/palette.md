@@ -77,3 +77,7 @@
 ## 2026-03-16 - Immediate announcement for dynamic inline errors
 **Learning:** When generating inline error elements dynamically (e.g. per-file errors after batch upload), screen readers may fail to announce the specific error cause to the user since they were not present on load. Adding `role="alert"` to the injected error container natively prompts immediate reading by assistive tech.
 **Action:** Always include `role="alert"` or `aria-live="assertive"` on dynamically injected error messages (like those appended to file cards) so that users get immediate, specific feedback about failures, instead of relying solely on the general aria-live status summary.
+
+## 2026-03-17 - Synchronizing Sanitized Numeric Inputs on Blur
+**Learning:** When numeric input fields sanitize or constrain invalid user entries (e.g. falling back to a default value for negative numbers), leaving the original invalid text in the input field creates a disconnect between the UI and the actual application state. The user may believe their input was accepted, even though it was silently ignored or corrected.
+**Action:** Always add a `blur` or `change` event listener to numeric inputs that updates the element's `.value` to match the sanitized internal state, ensuring the UI accurately reflects what is applied.
