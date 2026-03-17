@@ -35,9 +35,17 @@ function bindEvents() {
         render();
     });
 
+    elements.width.addEventListener("blur", () => {
+        elements.width.value = state.figureWidth;
+    });
+
     elements.height.addEventListener("input", () => {
         state.figureHeight = sanitizeWholeNumber(elements.height.value, 4);
         render();
+    });
+
+    elements.height.addEventListener("blur", () => {
+        elements.height.value = state.figureHeight;
     });
 
     elements.showFilenames.addEventListener("change", () => {
