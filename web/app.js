@@ -614,9 +614,18 @@ function buildCard(file) {
 }
 
 function buildEmptyState(message) {
-    const empty = document.createElement("p");
+    const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.textContent = message;
+
+    const icon = document.createElement("span");
+    icon.className = "empty-state-icon";
+    icon.innerHTML = '<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>';
+
+    const text = document.createElement("p");
+    text.textContent = message;
+
+    empty.appendChild(icon);
+    empty.appendChild(text);
     return empty;
 }
 

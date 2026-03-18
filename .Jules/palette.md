@@ -81,3 +81,7 @@
 ## 2026-03-17 - Synchronizing Sanitized Numeric Inputs on Blur
 **Learning:** When numeric input fields sanitize or constrain invalid user entries (e.g. falling back to a default value for negative numbers), leaving the original invalid text in the input field creates a disconnect between the UI and the actual application state. The user may believe their input was accepted, even though it was silently ignored or corrected.
 **Action:** Always add a `blur` or `change` event listener to numeric inputs that updates the element's `.value` to match the sanitized internal state, ensuring the UI accurately reflects what is applied.
+
+## 2026-03-18 - Visually Structured Empty States
+**Learning:** Bare text empty states (like a plain `<p>` tag) fail to anchor the user's visual hierarchy, often looking like broken or missing content rather than an intentional application state. This leads to user confusion about whether the app is ready or waiting for input.
+**Action:** Always provide visually structured empty states that include a descriptive icon, centered alignment, and a distinct bounding box (e.g., a dashed border or subtle background) to clearly indicate an intentional "waiting for user action" state.
