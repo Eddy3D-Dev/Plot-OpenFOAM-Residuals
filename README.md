@@ -29,15 +29,3 @@ python3 -m http.server 8000 --directory web
 ```
 
 Then open `http://localhost:8000`.
-
-## Deploy to GitHub Pages
-
-1. Push to your default branch (workflow is configured for `main`).
-2. In GitHub repo settings, enable Pages with source set to GitHub Actions.
-3. The workflow in `.github/workflows/deploy-pages.yml` will publish the `web/` folder.
-
-## How to Use
-
-1. Upload one or more OpenFOAM residual `.dat` or `.log` files.
-2. Configure static figure width/height and optionally enable filename labels.
-3. Switch between `Altair`, `Matplotlib`, and `Dataframe` tabs.
