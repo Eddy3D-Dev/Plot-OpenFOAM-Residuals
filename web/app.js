@@ -624,10 +624,9 @@ function renderMatplotlibPanel() {
         };
 
         Plotly.newPlot(plotHost, traces, layout, {
-            staticPlot: false,
-            displayModeBar: true,
+            staticPlot: true,
+            displayModeBar: false,
             displaylogo: false,
-            modeBarButtons: [["toImage"]],
         });
     }
 }
