@@ -1,7 +1,7 @@
 [project]
 name = "plot-openfoam-residuals"
 version = "0.2.0"
-description = "A GitHub Pages-ready single-page app that uploads and plots OpenFOAM residual.dat files fully in the browser."
+description = "A GitHub Pages-ready single-page app that uploads and plots OpenFOAM residual .dat/.log files fully in the browser."
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = [

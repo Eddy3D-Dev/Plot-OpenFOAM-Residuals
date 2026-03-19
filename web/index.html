@@ -23,17 +23,17 @@
             <p class="hero-kicker">OpenFOAM Diagnostics</p>
             <h1>Plot Residuals</h1>
             <p>
-                Upload one or more <code>residual.dat</code> files from <code>postProcessing</code>
+                Upload one or more OpenFOAM <code>.dat</code> or <code>.log</code> residual files
                 and switch between interactive, static, and table views.
             </p>
         </header>
 
         <section class="uploader panel">
             <h2>Files</h2>
-            <input id="residual-files" class="sr-only" type="file" accept=".dat" multiple>
+            <input id="residual-files" class="sr-only" type="file" accept=".dat,.log,text/plain" multiple>
             <label id="dropzone" class="upload-trigger" for="residual-files">
-                <span>Upload <code>residual.dat</code> files</span>
-                <small>.dat files, multiple selection supported</small>
+                <span>Upload OpenFOAM residual files</span>
+                <small>.dat and .log files, multiple selection supported</small>
             </label>
             <p class="uploader-help">
                 Files are parsed locally in your browser and never uploaded to a server.

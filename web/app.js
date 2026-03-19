@@ -169,7 +169,7 @@ async function parseSelectedFiles() {
         selectedFiles.map(async (file) => {
             try {
                 const content = await file.text();
-                const parsed = parseResidualData(content);
+                const parsed = parseResidualData(content, file.name);
                 return {
                     status: "ok",
                     name: file.name,
@@ -188,90 +188,26 @@ async function parseSelectedFiles() {
     state.files = parsedFiles;
 }
 
-function parseResidualData(rawText) {
-    // Performance optimization: Avoid global replaceAll("#", "") before split, which requires
-    // allocating a massive string copy for huge files. Split first, then replace on demand.
-    const rawRows = rawText.split(/\r?\n/);
+function parseResidualData(rawText, fileName = "") {
+    const lowerName = fileName.toLowerCase();
+    const preferDat = lowerName.endsWith(".dat");
+    const primaryParser = preferDat ? parseResidualDat : parseOpenFoamLog;
+    const fallbackParser = preferDat ? parseOpenFoamLog : parseResidualDat;
 
-    // Performance optimization: Avoid intermediate arrays created by slice().map().filter().
-    // Pre-allocating the array and truncating it is ~50% faster for large datasets.
-    const rowCount = rawRows.length;
-    const parsedRows = new Array(rowCount > 0 ? rowCount - 1 : 0);
-    let validRowCount = 0;
-
-    for (let i = 1; i < rowCount; i += 1) { // i = 1 matches pandas skiprows=[0]
-        let line = rawRows[i];
-        if (line.includes("#")) {
-            line = line.replaceAll("#", "");
-        }
-        const trimmed = line.trim();
-        if (trimmed.length > 0) {
-            parsedRows[validRowCount++] = trimmed;
+    try {
+        return buildParsedOutput(primaryParser(rawText));
+    } catch (primaryError) {
+        try {
+            return buildParsedOutput(fallbackParser(rawText));
+        } catch {
+            throw primaryError;
         }
     }
-    parsedRows.length = validRowCount;
+}
 
-    if (parsedRows.length < 2) {
-        throw new Error("Expected at least one header row and one data row.");
-    }
-
-    const header = splitColumns(parsedRows[0]);
-    if (header.length === 0) {
-        throw new Error("Could not parse header row.");
-    }
-
-    const timeIndex = header.indexOf("Time");
-    if (timeIndex === -1) {
-        throw new Error('Expected a "Time" column in the file.');
-    }
-
-    const candidateColumns = header.filter((_, index) => index !== timeIndex);
-
-    // Performance optimization: Pre-allocate column arrays to their maximum possible size
-    // and access them directly via an indexed array instead of an object property lookup.
-    // This avoids dynamic array reallocations and slow object key lookups in the hot loop,
-    // yielding ~20% faster parsing times for large residual files.
-    const expectedSize = parsedRows.length - 1;
-    const timeValues = new Array(expectedSize);
-
-    const columnArrays = new Array(header.length);
-    const columnValues = {};
-    for (let c = 0; c < header.length; c += 1) {
-        if (c !== timeIndex) {
-            const arr = new Array(expectedSize);
-            columnArrays[c] = arr;
-            columnValues[header[c]] = arr;
-        }
-    }
-
-    let validRows = 0;
-    for (let rowIndex = 1; rowIndex < parsedRows.length; rowIndex += 1) {
-        const fields = splitColumns(parsedRows[rowIndex]);
-        if (fields.length === 0) {
-            continue;
-        }
-        if (fields.length > header.length) {
-            throw new Error(`Row ${rowIndex + 2} has more values than header columns.`);
-        }
-
-        timeValues[validRows] = parseNumericValue(fields[timeIndex] || "");
-
-        for (let columnIndex = 0; columnIndex < header.length; columnIndex += 1) {
-            if (columnIndex === timeIndex) {
-                continue;
-            }
-            columnArrays[columnIndex][validRows] = parseNumericValue(fields[columnIndex] || "");
-        }
-        validRows += 1;
-    }
-
-    if (validRows < expectedSize) {
-        timeValues.length = validRows;
-        for (const name of candidateColumns) {
-            columnValues[name].length = validRows;
-        }
-    }
-
+function buildParsedOutput(parsed) {
+    const { timeValues, columnValues } = parsed;
+    const candidateColumns = Object.keys(columnValues);
     const columns = candidateColumns.filter((columnName) => hasFiniteValue(columnValues[columnName]));
     const dataColumns = Object.fromEntries(columns.map((columnName) => [columnName, columnValues[columnName]]));
     const altairColumns = FEATURE_COLUMNS.filter((columnName) => columns.includes(columnName));
@@ -284,6 +220,141 @@ function parseResidualData(rawText) {
         minResidual: computeMinResidual(dataColumns),
         maxIteration: computeMaxIteration(timeValues),
     };
+}
+
+function parseResidualDat(rawText) {
+    const rawRows = rawText.split(/\r?\n/);
+    let header = null;
+
+    for (let index = 0; index < rawRows.length; index += 1) {
+        const line = rawRows[index];
+        if (/^\s*#\s*Time(?:\s|$)/.test(line)) {
+            header = splitColumns(line.replaceAll("#", " "));
+            break;
+        }
+    }
+
+    if (!header || header.length === 0) {
+        throw new Error('Expected a "# Time" header row in the file.');
+    }
+
+    const timeIndex = header.indexOf("Time");
+    if (timeIndex === -1) {
+        throw new Error('Expected a "Time" column in the file.');
+    }
+
+    const timeValues = [];
+    const columnValues = {};
+    for (let columnIndex = 0; columnIndex < header.length; columnIndex += 1) {
+        if (columnIndex === timeIndex) {
+            continue;
+        }
+        columnValues[header[columnIndex]] = [];
+    }
+
+    for (let rowIndex = 0; rowIndex < rawRows.length; rowIndex += 1) {
+        const trimmed = rawRows[rowIndex].trim();
+        if (trimmed.length === 0 || trimmed.startsWith("#")) {
+            continue;
+        }
+
+        const fields = splitColumns(trimmed);
+        if (fields.length > header.length) {
+            throw new Error(`Data row ${rowIndex + 1} has more values than header columns.`);
+        }
+
+        timeValues.push(parseNumericValue(fields[timeIndex] || ""));
+
+        for (let columnIndex = 0; columnIndex < header.length; columnIndex += 1) {
+            if (columnIndex === timeIndex) {
+                continue;
+            }
+            const columnName = header[columnIndex];
+            columnValues[columnName].push(parseNumericValue(fields[columnIndex] || ""));
+        }
+    }
+
+    if (timeValues.length === 0) {
+        throw new Error("No data rows found in this .dat file.");
+    }
+
+    return { timeValues, columnValues };
+}
+
+function parseOpenFoamLog(rawText) {
+    const timePattern = /^\s*Time\s*=\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*$/;
+    const solvePattern = /^\s*[^:]+:\s+Solving for ([^,]+), Initial residual = ([^,]+),/;
+    const rows = [];
+    const indices = [];
+    let currentRow = null;
+    let timeStep = 0;
+
+    const lines = rawText.split(/\r?\n/);
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+        const line = lines[lineIndex];
+        if (timePattern.test(line)) {
+            if (currentRow && Object.keys(currentRow).length > 0) {
+                rows.push(currentRow);
+                indices.push(timeStep);
+            }
+            timeStep += 1;
+            currentRow = {};
+            continue;
+        }
+
+        if (currentRow === null) {
+            continue;
+        }
+
+        const solveMatch = line.match(solvePattern);
+        if (!solveMatch) {
+            continue;
+        }
+
+        const field = solveMatch[1].trim();
+        if (Object.prototype.hasOwnProperty.call(currentRow, field)) {
+            continue;
+        }
+
+        const residual = Number.parseFloat(solveMatch[2].trim());
+        if (Number.isFinite(residual)) {
+            currentRow[field] = residual;
+        }
+    }
+
+    if (currentRow && Object.keys(currentRow).length > 0) {
+        rows.push(currentRow);
+        indices.push(timeStep);
+    }
+
+    if (rows.length === 0) {
+        throw new Error("No OpenFOAM residual entries were found in this log file.");
+    }
+
+    const fieldNames = [];
+    const fieldSet = new Set();
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+        const row = rows[rowIndex];
+        for (const field of Object.keys(row)) {
+            if (!fieldSet.has(field)) {
+                fieldSet.add(field);
+                fieldNames.push(field);
+            }
+        }
+    }
+
+    const columnValues = Object.fromEntries(
+        fieldNames.map((field) => [field, new Array(rows.length).fill(Number.NaN)]),
+    );
+
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+        const row = rows[rowIndex];
+        for (const [field, value] of Object.entries(row)) {
+            columnValues[field][rowIndex] = value;
+        }
+    }
+
+    return { timeValues: indices, columnValues };
 }
 
 function render() {

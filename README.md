@@ -1,6 +1,6 @@
 # Plot OpenFOAM Residuals
 
-A modern single-page web app for visualizing OpenFOAM `residual.dat` files, deployable directly on GitHub Pages.
+A modern single-page web app for visualizing OpenFOAM residual `.dat` and `.log` files, deployable directly on GitHub Pages.
 
 ## Features
 
@@ -38,6 +38,6 @@ Then open `http://localhost:8000`.
 
 ## How to Use
 
-1. Upload one or more `residual.dat` files (from `postProcessing`).
+1. Upload one or more OpenFOAM residual `.dat` or `.log` files.
 2. Configure static figure width/height and optionally enable filename labels.
 3. Switch between `Altair`, `Matplotlib`, and `Dataframe` tabs.
