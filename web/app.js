@@ -322,6 +322,7 @@ function parseOpenFoamLog(rawText) {
     let currentRow = null;
     let currentIndex = null;
     let fallbackIndex = 0;
+    let explicitStepIndex = 0;
 
     const flushCurrentRow = () => {
         if (!currentRow || Object.keys(currentRow).length === 0) {
@@ -343,8 +344,10 @@ function parseOpenFoamLog(rawText) {
         if (timeMatch) {
             flushCurrentRow();
             currentRow = {};
-            const parsedTime = Number.parseFloat(timeMatch[1]);
-            currentIndex = Number.isFinite(parsedTime) ? parsedTime : null;
+            // Use monotonic step index for .log parsing to keep x-axis consistent
+            // with "Iteration" labeling and avoid artifacts when simulation time repeats.
+            currentIndex = explicitStepIndex;
+            explicitStepIndex += 1;
             continue;
         }
 
