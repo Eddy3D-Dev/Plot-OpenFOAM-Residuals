@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,19 +9,51 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-        rel="stylesheet"
-    >
+        rel="stylesheet">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="./icon.svg">
     <link rel="stylesheet" href="./styles.css">
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
     <script type="module" src="./app.js" defer></script>
+    <script>
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            document.documentElement.setAttribute('data-theme', storedTheme);
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
 </head>
+
 <body>
     <div class="background-shape background-shape-left" aria-hidden="true"></div>
     <div class="background-shape background-shape-right" aria-hidden="true"></div>
 
     <main class="app-shell">
         <header class="hero panel">
-            <p class="hero-kicker">OpenFOAM Diagnostics</p>
+            <div class="hero-header">
+                <p class="hero-kicker">OpenFOAM Diagnostics</p>
+                <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">
+                    <svg class="sun-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M12 2v2" />
+                        <path d="M12 20v2" />
+                        <path d="m4.93 4.93 1.41 1.41" />
+                        <path d="m17.66 17.66 1.41 1.41" />
+                        <path d="M2 12h2" />
+                        <path d="M20 12h2" />
+                        <path d="m6.34 17.66-1.41 1.41" />
+                        <path d="m19.07 4.93-1.41 1.41" />
+                    </svg>
+                    <svg class="moon-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
+                </button>
+            </div>
             <h1>Plot Residuals</h1>
             <p>
                 Upload one or more OpenFOAM <code>.dat</code> or <code>.log</code> residual files
@@ -41,16 +74,23 @@
             <div class="summary-container">
                 <p id="file-summary" class="file-summary" aria-live="polite">No files selected.</p>
                 <button id="clear-files" class="clear-button" type="button" hidden aria-label="Clear all files">
-                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6 6 18" />
+                        <path d="m6 6 12 12" />
+                    </svg>
                     <span>Clear</span>
                 </button>
             </div>
         </section>
 
         <section class="tab-controls panel" role="tablist" aria-label="Result views">
-            <button class="tab-button is-active" role="tab" aria-selected="true" aria-controls="panel-altair" id="tab-altair" data-tab="altair" type="button" tabindex="0">Altair</button>
-            <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-matplotlib" id="tab-matplotlib" data-tab="matplotlib" type="button" tabindex="-1">Matplotlib (Static)</button>
-            <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-dataframe" id="tab-dataframe" data-tab="dataframe" type="button" tabindex="-1">Dataframe</button>
+            <button class="tab-button is-active" role="tab" aria-selected="true" aria-controls="panel-altair"
+                id="tab-altair" data-tab="altair" type="button" tabindex="0">Altair</button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-matplotlib"
+                id="tab-matplotlib" data-tab="matplotlib" type="button" tabindex="-1">Matplotlib (Static)</button>
+            <button class="tab-button" role="tab" aria-selected="false" aria-controls="panel-dataframe"
+                id="tab-dataframe" data-tab="dataframe" type="button" tabindex="-1">Dataframe</button>
         </section>
 
         <section id="plot-settings" class="controls panel" style="display: none;">
@@ -75,13 +115,17 @@
             </div>
         </section>
 
-        <section id="panel-altair" class="tab-panel panel is-active" role="tabpanel" aria-labelledby="tab-altair" tabindex="0"></section>
-        <section id="panel-matplotlib" class="tab-panel panel" role="tabpanel" aria-labelledby="tab-matplotlib" tabindex="0"></section>
-        <section id="panel-dataframe" class="tab-panel panel" role="tabpanel" aria-labelledby="tab-dataframe" tabindex="0"></section>
+        <section id="panel-altair" class="tab-panel panel is-active" role="tabpanel" aria-labelledby="tab-altair"
+            tabindex="0"></section>
+        <section id="panel-matplotlib" class="tab-panel panel" role="tabpanel" aria-labelledby="tab-matplotlib"
+            tabindex="0"></section>
+        <section id="panel-dataframe" class="tab-panel panel" role="tabpanel" aria-labelledby="tab-dataframe"
+            tabindex="0"></section>
     </main>
 
     <noscript>
         This app needs JavaScript enabled to parse and plot residual files.
     </noscript>
 </body>
+
 </html>

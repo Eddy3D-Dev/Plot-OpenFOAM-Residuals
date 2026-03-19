@@ -26,10 +26,19 @@ const elements = {
         matplotlib: document.getElementById("panel-matplotlib"),
         dataframe: document.getElementById("panel-dataframe"),
     },
+    themeToggle: document.getElementById("theme-toggle"),
 };
 
 bindEvents();
 render();
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(err => {
+            console.error('ServiceWorker registration failed: ', err);
+        });
+    });
+}
 
 function bindEvents() {
     elements.width.addEventListener("input", () => {
@@ -165,6 +174,38 @@ function bindEvents() {
             render();
         });
     });
+
+    if (elements.themeToggle) {
+        elements.themeToggle.addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let newTheme;
+            if (currentTheme) {
+                newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            } else {
+                newTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';
+            }
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            render();
+        });
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+            render();
+        }
+    });
+}
+
+function getThemeColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    return {
+        bg: isDark ? '#1e293b' : '#ffffff',
+        font: isDark ? '#f8fafc' : '#1f2a30',
+        grid: isDark ? '#334155' : '#e4eaed'
+    };
 }
 
 async function parseSelectedFiles() {
@@ -369,8 +410,9 @@ function parseOpenFoamLog(rawText) {
 
         if (Object.prototype.hasOwnProperty.call(currentRow, field)) {
             if (hasExplicitTimeMarkers) {
-                // In explicit-time logs, keep a single row per time and ignore duplicate
-                // solves for the same field within that step.
+                // In explicit-time logs, a field may be solved multiple times per step.
+                // Keep the minimum residual for that step to avoid misleading long-line artifacts.
+                currentRow[field] = Math.min(currentRow[field], residual);
                 continue;
             }
             // In logs without explicit time lines, treat repeated fields as row boundaries.
@@ -531,6 +573,27 @@ function renderAltairPanel() {
         const plotHost = document.createElement("div");
         plotHost.className = "plot-host";
         card.appendChild(plotHost);
+
+        const cardHeader = card.querySelector('.card-header');
+        if (cardHeader) {
+            const toolbar = document.createElement("div");
+            toolbar.className = "export-toolbar";
+
+            const btnPng = document.createElement("button");
+            btnPng.className = "export-btn";
+            btnPng.textContent = "PNG";
+            btnPng.onclick = () => Plotly.downloadImage(plotHost, { format: 'png', filename: file.name.replace(/\.[^/.]+$/, "") + '_plot' });
+
+            const btnSvg = document.createElement("button");
+            btnSvg.className = "export-btn";
+            btnSvg.textContent = "SVG";
+            btnSvg.onclick = () => Plotly.downloadImage(plotHost, { format: 'svg', filename: file.name.replace(/\.[^/.]+$/, "") + '_plot' });
+
+            toolbar.appendChild(btnPng);
+            toolbar.appendChild(btnSvg);
+            cardHeader.appendChild(toolbar);
+        }
+
         panel.appendChild(card);
 
         const traces = chartColumns.map((columnName) => ({
@@ -545,21 +608,23 @@ function renderAltairPanel() {
             },
         }));
 
+        const theme = getThemeColors();
         const layout = {
             margin: { l: 72, r: 24, t: 24, b: 60 },
-            paper_bgcolor: "#ffffff",
-            plot_bgcolor: "#ffffff",
+            paper_bgcolor: theme.bg,
+            plot_bgcolor: theme.bg,
+            font: { color: theme.font },
             legend: { orientation: "h", y: 1.14, x: 0 },
             xaxis: {
                 title: "Iteration",
                 zeroline: false,
-                gridcolor: "#e4eaed",
+                gridcolor: theme.grid,
             },
             yaxis: {
                 title: "Residuals",
                 type: "log",
                 exponentformat: "e",
-                gridcolor: "#e4eaed",
+                gridcolor: theme.grid,
             },
         };
 
@@ -598,6 +663,27 @@ function renderMatplotlibPanel() {
         const plotHost = document.createElement("div");
         plotHost.className = "plot-host static";
         card.appendChild(plotHost);
+
+        const cardHeader = card.querySelector('.card-header');
+        if (cardHeader) {
+            const toolbar = document.createElement("div");
+            toolbar.className = "export-toolbar";
+
+            const btnPng = document.createElement("button");
+            btnPng.className = "export-btn";
+            btnPng.textContent = "PNG";
+            btnPng.onclick = () => Plotly.downloadImage(plotHost, { format: 'png', filename: file.name.replace(/\.[^/.]+$/, "") + '_plot' });
+
+            const btnSvg = document.createElement("button");
+            btnSvg.className = "export-btn";
+            btnSvg.textContent = "SVG";
+            btnSvg.onclick = () => Plotly.downloadImage(plotHost, { format: 'svg', filename: file.name.replace(/\.[^/.]+$/, "") + '_plot' });
+
+            toolbar.appendChild(btnPng);
+            toolbar.appendChild(btnSvg);
+            cardHeader.appendChild(toolbar);
+        }
+
         panel.appendChild(card);
 
         const widthPixels = Math.max(320, state.figureWidth * 100);
@@ -617,19 +703,21 @@ function renderMatplotlibPanel() {
             },
         }));
 
+        const theme = getThemeColors();
         const layout = {
             width: widthPixels,
             height: heightPixels,
             margin: { l: 78, r: 24, t: 18, b: 58 },
-            paper_bgcolor: "#ffffff",
-            plot_bgcolor: "#ffffff",
+            paper_bgcolor: theme.bg,
+            plot_bgcolor: theme.bg,
+            font: { color: theme.font },
             legend: { x: 1, y: 1, xanchor: "right", yanchor: "top" },
             xaxis: {
                 title: "Iterations",
                 range: [0, file.maxIteration],
                 zeroline: false,
                 showgrid: state.showGrid,
-                gridcolor: state.showGrid ? "#e4eaed" : undefined,
+                gridcolor: state.showGrid ? theme.grid : undefined,
             },
             yaxis: {
                 title: "Residuals",
@@ -637,7 +725,7 @@ function renderMatplotlibPanel() {
                 exponentformat: "e",
                 range: [yRangeMin, 0],
                 showgrid: state.showGrid,
-                gridcolor: state.showGrid ? "#e4eaed" : undefined,
+                gridcolor: state.showGrid ? theme.grid : undefined,
             },
         };
 
@@ -737,12 +825,16 @@ function buildCard(file) {
     const card = document.createElement("article");
     card.className = "result-card";
 
+    const headerRow = document.createElement("div");
+    headerRow.className = "card-header";
+
     if (state.showFilenames || state.files.length > 1) {
         const title = document.createElement("h3");
         title.textContent = file.name;
-        card.appendChild(title);
+        headerRow.appendChild(title);
     }
 
+    card.appendChild(headerRow);
     return card;
 }
 
