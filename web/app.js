@@ -305,8 +305,9 @@ function parseResidualDat(rawText) {
 }
 
 function parseOpenFoamLog(rawText) {
-    const timePattern = /(?:^|\s)Time\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)/;
+    const timePattern = /^\s*Time\s*=\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)\s*$/;
     const solvePattern = /Solving for\s+([^,]+),\s*Initial residual\s*=\s*([^,]+),/;
+    const hasExplicitTimeMarkers = /(?:^|\n)\s*Time\s*=\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*(?:\n|$)/m.test(rawText);
     const rows = [];
     const indices = [];
     let currentRow = null;
@@ -355,6 +356,12 @@ function parseOpenFoamLog(rawText) {
         }
 
         if (Object.prototype.hasOwnProperty.call(currentRow, field)) {
+            if (hasExplicitTimeMarkers) {
+                // In explicit-time logs, keep a single row per time and ignore duplicate
+                // solves for the same field within that step.
+                continue;
+            }
+            // In logs without explicit time lines, treat repeated fields as row boundaries.
             flushCurrentRow();
             currentRow = {};
             currentIndex = null;
