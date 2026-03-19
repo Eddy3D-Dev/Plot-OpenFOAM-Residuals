@@ -31,6 +31,7 @@ const elements = {
 
 bindEvents();
 render();
+loadContributors();
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -897,6 +898,41 @@ function hasFiniteValue(values) {
         }
     }
     return false;
+}
+
+async function loadContributors() {
+    const container = document.getElementById('contributors');
+    if (!container) return;
+
+    try {
+        const response = await fetch('https://api.github.com/repos/Eddy3D-Dev/Plot-OpenFOAM-Residuals/contributors');
+        if (!response.ok) throw new Error('Failed to fetch contributors');
+
+        const contributors = await response.json();
+
+        contributors.forEach(user => {
+            if (user.type === 'Bot') return;
+
+            const bubble = document.createElement('a');
+            bubble.href = user.html_url;
+            bubble.className = 'contributor-bubble';
+            bubble.target = '_blank';
+            bubble.rel = 'noopener noreferrer';
+            bubble.title = user.login;
+            bubble.setAttribute('aria-label', `View ${user.login}'s GitHub profile`);
+
+            const img = document.createElement('img');
+            img.src = user.avatar_url;
+            img.alt = '';
+            img.setAttribute('aria-hidden', 'true');
+            img.loading = 'lazy';
+
+            bubble.appendChild(img);
+            container.appendChild(bubble);
+        });
+    } catch (error) {
+        console.error('Error loading contributors:', error);
+    }
 }
 
 function computeMinResidual(dataColumns) {
