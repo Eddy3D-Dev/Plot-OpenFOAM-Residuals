@@ -3,10 +3,10 @@ const TAB_NAMES = ["altair", "matplotlib", "dataframe"];
 
 const state = {
     activeTab: "altair",
-    figureWidth: 10,
-    figureHeight: 4,
+    figureWidth: Number.parseInt(localStorage.getItem('figureWidth'), 10) || 10,
+    figureHeight: Number.parseInt(localStorage.getItem('figureHeight'), 10) || 4,
     showFilenames: false,
-    showGrid: true,
+    showGrid: localStorage.getItem('showGrid') !== 'false',
     files: [],
 };
 
@@ -42,8 +42,13 @@ if ('serviceWorker' in navigator) {
 }
 
 function bindEvents() {
+    // Sync UI with loaded state from localStorage
+    elements.width.value = state.figureWidth;
+    elements.height.value = state.figureHeight;
+
     elements.width.addEventListener("input", () => {
         state.figureWidth = sanitizeWholeNumber(elements.width.value, 10);
+        localStorage.setItem('figureWidth', state.figureWidth);
         render();
     });
 
@@ -53,6 +58,7 @@ function bindEvents() {
 
     elements.height.addEventListener("input", () => {
         state.figureHeight = sanitizeWholeNumber(elements.height.value, 4);
+        localStorage.setItem('figureHeight', state.figureHeight);
         render();
     });
 
@@ -68,9 +74,43 @@ function bindEvents() {
     if (elements.showGrid) {
         elements.showGrid.addEventListener("change", () => {
             state.showGrid = elements.showGrid.checked;
+            localStorage.setItem('showGrid', state.showGrid);
             render();
         });
     }
+
+    // Global paste listener for pasting OpenFOAM logs
+    document.addEventListener("paste", async (e) => {
+        // Prevent interfering with input fields
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const text = e.clipboardData?.getData("text");
+        if (text && text.trim().length > 0) {
+            elements.fileSummary.textContent = "Parsing clipboard data...";
+            await new Promise((resolve) => setTimeout(resolve, 10)); // Allow UI paint
+
+            const timestamp = new Date().toLocaleTimeString().replace(/:/g, '-');
+            const fakeName = `clipboard_${timestamp}.log`;
+
+            try {
+                const parsed = parseResidualData(text, fakeName);
+                state.files.push({
+                    status: "ok",
+                    name: fakeName,
+                    ...parsed
+                });
+            } catch (error) {
+                state.files.push({
+                    status: "error",
+                    name: fakeName,
+                    message: error.message || String(error)
+                });
+            }
+            elements.fileInput.value = "";
+            state.activeTab = "altair";
+            render();
+        }
+    });
 
     let clearConfirmTimeout;
     elements.clearFiles.addEventListener("click", () => {

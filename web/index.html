@@ -69,7 +69,8 @@
             </div>
             <h1>Plot Residuals</h1>
             <p>
-                Upload one or more OpenFOAM <code>.dat</code> or <code>.log</code> residual files
+                Upload OpenFOAM <code>.dat</code> or <code>.log</code> residual files, or paste text directly
+                (<code>Ctrl+V</code>),
                 and switch between interactive, static, and table views.
             </p>
         </header>
@@ -78,8 +79,8 @@
             <h2>Files</h2>
             <input id="residual-files" class="sr-only" type="file" accept=".dat,.log,text/plain" multiple>
             <label id="dropzone" class="upload-trigger" for="residual-files">
-                <span>Upload OpenFOAM residual files</span>
-                <small>.dat and .log files, multiple selection supported</small>
+                <span>Upload files or Paste anywhere</span>
+                <small>.dat or .log files, or use Ctrl+V. Multiple selection supported.</small>
             </label>
             <p class="uploader-help">
                 Files are parsed locally in your browser and never uploaded to a server.
