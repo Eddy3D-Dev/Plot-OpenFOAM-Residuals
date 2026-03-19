@@ -1,5 +1,8 @@
 # Plot OpenFOAM Residuals
 
+[![Deploy GitHub Pages](https://github.com/Eddy3D-Dev/Plot-OpenFOAM-Residuals/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/Eddy3D-Dev/Plot-OpenFOAM-Residuals/actions/workflows/deploy-pages.yml)
+[![GitHub Tag (latest by date)](https://img.shields.io/github/v/tag/Eddy3D-Dev/Plot-OpenFOAM-Residuals)](https://github.com/Eddy3D-Dev/Plot-OpenFOAM-Residuals/tags)
+
 A modern single-page web app for visualizing OpenFOAM residual `.dat` and `.log` files, deployable directly on GitHub Pages.
 
 ## Features
