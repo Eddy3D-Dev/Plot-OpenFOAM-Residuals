@@ -649,6 +649,9 @@ function renderAltairPanel() {
             },
         }));
 
+        const logMinResidual = Math.log10(file.minResidual);
+        const yRangeMin = Number.isFinite(logMinResidual) && logMinResidual < 0 ? logMinResidual : -1;
+
         const theme = getThemeColors();
         const layout = {
             margin: { l: 72, r: 24, t: 24, b: 60 },
@@ -666,6 +669,7 @@ function renderAltairPanel() {
                 type: "log",
                 dtick: 1,
                 exponentformat: "e",
+                range: [yRangeMin, 0],
                 gridcolor: theme.grid,
             },
         };
