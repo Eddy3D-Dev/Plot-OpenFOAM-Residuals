@@ -6,6 +6,7 @@ const state = {
     figureWidth: 10,
     figureHeight: 4,
     showFilenames: false,
+    showGrid: true,
     files: [],
 };
 
@@ -13,6 +14,7 @@ const elements = {
     width: document.getElementById("figure-width"),
     height: document.getElementById("figure-height"),
     showFilenames: document.getElementById("show-filenames"),
+    showGrid: document.getElementById("show-grid"),
     fileInput: document.getElementById("residual-files"),
     dropzone: document.getElementById("dropzone"),
     fileSummary: document.getElementById("file-summary"),
@@ -52,6 +54,13 @@ function bindEvents() {
         state.showFilenames = elements.showFilenames.checked;
         render();
     });
+
+    if (elements.showGrid) {
+        elements.showGrid.addEventListener("change", () => {
+            state.showGrid = elements.showGrid.checked;
+            render();
+        });
+    }
 
     let clearConfirmTimeout;
     elements.clearFiles.addEventListener("click", () => {
@@ -453,6 +462,10 @@ function renderTabs() {
                 container.title = "";
             }
         }
+
+        if (elements.showGrid) {
+            elements.showGrid.checked = state.showGrid;
+        }
     }
 }
 
@@ -612,14 +625,16 @@ function renderMatplotlibPanel() {
                 title: "Iterations",
                 range: [0, file.maxIteration],
                 zeroline: false,
-                gridcolor: "#e4eaed",
+                showgrid: state.showGrid,
+                gridcolor: state.showGrid ? "#e4eaed" : undefined,
             },
             yaxis: {
                 title: "Residuals",
                 type: "log",
                 exponentformat: "e",
                 range: [yRangeMin, 0],
-                gridcolor: "#e4eaed",
+                showgrid: state.showGrid,
+                gridcolor: state.showGrid ? "#e4eaed" : undefined,
             },
         };
 
