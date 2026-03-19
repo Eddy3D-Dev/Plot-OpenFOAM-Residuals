@@ -664,6 +664,7 @@ function renderAltairPanel() {
             yaxis: {
                 title: "Residuals",
                 type: "log",
+                dtick: 1,
                 exponentformat: "e",
                 gridcolor: theme.grid,
             },
@@ -763,6 +764,7 @@ function renderMatplotlibPanel() {
             yaxis: {
                 title: "Residuals",
                 type: "log",
+                dtick: 1,
                 exponentformat: "e",
                 range: [yRangeMin, 0],
                 showgrid: state.showGrid,
