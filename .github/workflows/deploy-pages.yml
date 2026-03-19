@@ -3,11 +3,11 @@ name: Deploy GitHub Pages
 on:
   push:
     branches:
-      - main
+      - deploy
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -24,6 +24,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+
+      - name: Inject version to UI
+        run: |
+          sed -i "s/vDev/${{ steps.tag_version.outputs.new_tag }}/g" web/index.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
