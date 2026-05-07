@@ -41,14 +41,44 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-window.addEventListener('DOMContentLoaded', async () => {
-    const params = new URLSearchParams(window.location.search);
-    const fetchUrl = params.get('url');
-    
-    if (fetchUrl) {
+// Check for #data= hash fragment to auto-load residual data from Grasshopper.
+// The C# component Base64-encodes the file content into the URL hash, which
+// bypasses all CORS / Private Network Access / mixed-content restrictions.
+// Also supports ?url= for backwards compatibility with direct fetch.
+(async () => {
+    const hash = window.location.hash.substring(1); // remove leading #
+    const hashParams = new URLSearchParams(hash);
+    const base64Data = hashParams.get('data');
+    const urlParam = new URLSearchParams(window.location.search).get('url');
+
+    if (base64Data) {
+        // Decode Base64 data from hash fragment (Grasshopper integration)
+        const fileName = decodeURIComponent(hashParams.get('name') || 'grasshopper_residuals.dat');
+        elements.fileSummary.textContent = "Loading data from Grasshopper...";
+        try {
+            const text = atob(base64Data);
+
+            const parsed = parseResidualData(text, fileName);
+            state.files.push({
+                status: "ok",
+                name: fileName,
+                ...parsed
+            });
+
+            // Clean the hash so refreshing doesn't re-parse
+            window.history.replaceState({}, document.title, window.location.pathname);
+
+            state.activeTab = "altair";
+            render();
+        } catch (error) {
+            console.error("Failed to decode Grasshopper data:", error);
+            elements.fileSummary.textContent = "Failed to decode data from Grasshopper.";
+        }
+    } else if (urlParam) {
+        // Fetch from a URL (for local dev / testing)
         elements.fileSummary.textContent = "Fetching data from Grasshopper...";
         try {
-            const response = await fetch(fetchUrl);
+            const response = await fetch(urlParam);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -56,7 +86,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             
             let fileName = 'grasshopper_residuals.log';
             try {
-                const urlObj = new URL(fetchUrl);
+                const urlObj = new URL(urlParam);
                 const pathParts = urlObj.pathname.split('/');
                 const lastPart = pathParts[pathParts.length - 1];
                 if (lastPart) {
@@ -83,7 +113,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             elements.fileSummary.textContent = "Failed to fetch from Grasshopper. Is the local server running?";
         }
     }
-});
+})();
 
 function bindEvents() {
     // Sync UI with loaded state from localStorage
