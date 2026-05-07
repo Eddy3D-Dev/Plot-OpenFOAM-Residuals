@@ -47,13 +47,16 @@ if ('serviceWorker' in navigator) {
 // Also supports ?url= for backwards compatibility with direct fetch.
 (async () => {
     const hash = window.location.hash.substring(1); // remove leading #
-    const hashParams = new URLSearchParams(hash);
-    const base64Data = hashParams.get('data');
+    // Parse hash manually instead of URLSearchParams, which converts + to space
+    // and would corrupt Base64 data.
+    const dataMatch = hash.match(/(?:^|&)data=([^&]*)/);
+    const nameMatch = hash.match(/(?:^|&)name=([^&]*)/);
+    const base64Data = dataMatch ? dataMatch[1] : null;
     const urlParam = new URLSearchParams(window.location.search).get('url');
 
     if (base64Data) {
         // Decode Base64 data from hash fragment (Grasshopper integration)
-        const fileName = decodeURIComponent(hashParams.get('name') || 'grasshopper_residuals.dat');
+        const fileName = decodeURIComponent(nameMatch ? nameMatch[1] : 'grasshopper_residuals.dat');
         elements.fileSummary.textContent = "Loading data from Grasshopper...";
         try {
             const text = atob(base64Data);
