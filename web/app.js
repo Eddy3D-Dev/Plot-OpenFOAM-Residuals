@@ -41,6 +41,50 @@ if ('serviceWorker' in navigator) {
     });
 }
 
+window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const fetchUrl = params.get('url');
+    
+    if (fetchUrl) {
+        elements.fileSummary.textContent = "Fetching data from Grasshopper...";
+        try {
+            const response = await fetch(fetchUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const text = await response.text();
+            
+            let fileName = 'grasshopper_residuals.log';
+            try {
+                const urlObj = new URL(fetchUrl);
+                const pathParts = urlObj.pathname.split('/');
+                const lastPart = pathParts[pathParts.length - 1];
+                if (lastPart) {
+                    fileName = decodeURIComponent(lastPart);
+                }
+            } catch (e) {
+                // Ignore URL parse errors
+            }
+
+            const parsed = parseResidualData(text, fileName);
+            state.files.push({
+                status: "ok",
+                name: fileName,
+                ...parsed
+            });
+            
+            const newUrl = window.location.pathname + window.location.hash;
+            window.history.replaceState({}, document.title, newUrl);
+            
+            state.activeTab = "altair";
+            render();
+        } catch (error) {
+            console.error("Failed to fetch Grasshopper data:", error);
+            elements.fileSummary.textContent = "Failed to fetch from Grasshopper. Is the local server running?";
+        }
+    }
+});
+
 function bindEvents() {
     // Sync UI with loaded state from localStorage
     elements.width.value = state.figureWidth;
