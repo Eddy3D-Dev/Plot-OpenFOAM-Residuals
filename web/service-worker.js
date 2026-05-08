@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plotfoam-v2';
+const CACHE_NAME = 'plotfoam-v3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -11,12 +11,23 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
+    // Skip waiting so the new SW activates immediately
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
     );
 });
 
 self.addEventListener('fetch', event => {
+    // For navigation requests (HTML pages), use network-first so we never
+    // serve a stale index.html from cache.
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).catch(() => caches.match(event.request))
+        );
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then(response => {
             // Return cached version or fetch from network
@@ -36,9 +47,10 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+    // Claim all clients immediately so the new SW takes over right away
     event.waitUntil(
         caches.keys().then(keys => {
             return Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
-        })
+        }).then(() => self.clients.claim())
     );
 });
