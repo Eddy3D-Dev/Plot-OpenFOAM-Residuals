@@ -1,3 +1,5 @@
+import pako from "https://esm.sh/pako@2.1.0";
+
 const FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"];
 const TAB_NAMES = ["altair", "matplotlib", "dataframe"];
 
@@ -29,94 +31,125 @@ const elements = {
     themeToggle: document.getElementById("theme-toggle"),
 };
 
-bindEvents();
-render();
-loadContributors();
+init();
 
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js').catch(err => {
-            console.error('ServiceWorker registration failed: ', err);
+async function init() {
+    bindEvents();
+    await initializePayloadFromUrl();
+    render();
+    loadContributors();
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js').catch(err => {
+                console.error('ServiceWorker registration failed: ', err);
+            });
         });
-    });
+    }
 }
 
-// Check for #data= hash fragment to auto-load residual data from Grasshopper.
-// The C# component Base64-encodes the file content into the URL hash, which
-// bypasses all CORS / Private Network Access / mixed-content restrictions.
-// Also supports ?url= for backwards compatibility with direct fetch.
-(async () => {
-    const hash = window.location.hash.substring(1); // remove leading #
-    // Parse hash manually instead of URLSearchParams, which converts + to space
-    // and would corrupt Base64 data.
-    const dataMatch = hash.match(/(?:^|&)data=([^&]*)/);
+async function initializePayloadFromUrl() {
+    const hash = window.location.hash.substring(1);
+    if (!hash) {
+        // Fallback to ?url= for backwards compatibility with direct fetch.
+        const urlParam = new URLSearchParams(window.location.search).get('url');
+        if (urlParam) {
+            elements.fileSummary.textContent = "Fetching data from Grasshopper...";
+            try {
+                const response = await fetch(urlParam);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const text = await response.text();
+                
+                let fileName = 'grasshopper_residuals.log';
+                try {
+                    const urlObj = new URL(urlParam);
+                    const pathParts = urlObj.pathname.split('/');
+                    const lastPart = pathParts[pathParts.length - 1];
+                    if (lastPart) {
+                        fileName = decodeURIComponent(lastPart);
+                    }
+                } catch (e) {
+                    // Ignore URL parse errors
+                }
+
+                const parsed = parseResidualData(text, fileName);
+                state.files.push({
+                    status: "ok",
+                    name: fileName,
+                    ...parsed
+                });
+                
+                const newUrl = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, document.title, newUrl);
+                
+                state.activeTab = "altair";
+            } catch (error) {
+                console.error("Failed to fetch Grasshopper data:", error);
+                elements.fileSummary.textContent = "Failed to fetch from Grasshopper. Is the local server running?";
+            }
+        }
+        return;
+    }
+
     const nameMatch = hash.match(/(?:^|&)name=([^&]*)/);
-    const base64Data = dataMatch ? dataMatch[1] : null;
-    const urlParam = new URLSearchParams(window.location.search).get('url');
+    const fileName = decodeURIComponent(nameMatch ? nameMatch[1] : 'grasshopper_residuals.dat');
 
-    if (base64Data) {
-        // Decode Base64 data from hash fragment (Grasshopper integration)
-        const fileName = decodeURIComponent(nameMatch ? nameMatch[1] : 'grasshopper_residuals.dat');
-        elements.fileSummary.textContent = "Loading data from Grasshopper...";
-        try {
-            const text = atob(base64Data);
+    // Parse hash manually for data to avoid URLSearchParams converting + to space
+    const dataMatch = hash.match(/(?:^|&)data=([^&]*)/);
+    const rawData = dataMatch ? dataMatch[1] : null;
+    
+    // zdata is also Base64 so we parse it manually
+    const zdataMatch = hash.match(/(?:^|&)zdata=([^&]*)/);
+    const compressedData = zdataMatch ? zdataMatch[1] : null;
 
-            const parsed = parseResidualData(text, fileName);
-            state.files.push({
-                status: "ok",
-                name: fileName,
-                ...parsed
-            });
+    if (!rawData && !compressedData) {
+        return;
+    }
 
+    let content = null;
+    let name = fileName;
+
+    try {
+        if (compressedData) {
+            const binaryString = atob(compressedData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const decompressed = pako.inflateRaw(bytes);
+            content = new TextDecoder().decode(decompressed);
+            if (name === 'grasshopper_residuals.dat') name = "Compressed Residuals";
+        } else if (rawData) {
+            content = atob(rawData);
+            if (name === 'grasshopper_residuals.dat') name = "Residuals";
+        }
+
+        if (content) {
+            const parsed = parseResidualData(content, name);
+            state.files = [
+                {
+                    status: "ok",
+                    name: name,
+                    ...parsed,
+                },
+            ];
+            
             // Clean the hash so refreshing doesn't re-parse
             window.history.replaceState({}, document.title, window.location.pathname);
-
             state.activeTab = "altair";
-            render();
-        } catch (error) {
-            console.error("Failed to decode Grasshopper data:", error);
-            elements.fileSummary.textContent = "Failed to decode data from Grasshopper.";
         }
-    } else if (urlParam) {
-        // Fetch from a URL (for local dev / testing)
-        elements.fileSummary.textContent = "Fetching data from Grasshopper...";
-        try {
-            const response = await fetch(urlParam);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const text = await response.text();
-            
-            let fileName = 'grasshopper_residuals.log';
-            try {
-                const urlObj = new URL(urlParam);
-                const pathParts = urlObj.pathname.split('/');
-                const lastPart = pathParts[pathParts.length - 1];
-                if (lastPart) {
-                    fileName = decodeURIComponent(lastPart);
-                }
-            } catch (e) {
-                // Ignore URL parse errors
-            }
-
-            const parsed = parseResidualData(text, fileName);
-            state.files.push({
-                status: "ok",
-                name: fileName,
-                ...parsed
-            });
-            
-            const newUrl = window.location.pathname + window.location.hash;
-            window.history.replaceState({}, document.title, newUrl);
-            
-            state.activeTab = "altair";
-            render();
-        } catch (error) {
-            console.error("Failed to fetch Grasshopper data:", error);
-            elements.fileSummary.textContent = "Failed to fetch from Grasshopper. Is the local server running?";
-        }
+    } catch (error) {
+        state.files = [
+            {
+                status: "error",
+                name: "URL Payload",
+                message: "Failed to parse URL data: " + normalizeError(error),
+            },
+        ];
     }
-})();
+}
 
 function bindEvents() {
     // Sync UI with loaded state from localStorage
@@ -313,6 +346,11 @@ function bindEvents() {
             document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
             render();
         }
+    });
+
+    window.addEventListener("hashchange", async () => {
+        await initializePayloadFromUrl();
+        render();
     });
 }
 
@@ -1089,7 +1127,7 @@ function computeMaxIteration(timeValues) {
     let max = 0;
 
     // Performance optimization: Replace for...of with standard for loop.
-    // Avoids iterator allocation and execution overhead on large arrays.
+    // Avoids iterator allocation and overhead on large arrays.
     for (let i = 0; i < timeValues.length; i += 1) {
         const value = timeValues[i];
         if (!Number.isFinite(value)) {
