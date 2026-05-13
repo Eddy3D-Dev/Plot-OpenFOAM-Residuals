@@ -1,3 +1,5 @@
+import pako from "https://esm.sh/pako@2.1.0";
+
 const FEATURE_COLUMNS = ["Ux", "Uy", "Uz", "p", "epsilon", "k"];
 const TAB_NAMES = ["altair", "matplotlib", "dataframe"];
 
@@ -23,8 +25,13 @@ const elements = {
     },
 };
 
-bindEvents();
-render();
+init();
+
+async function init() {
+    bindEvents();
+    await initializePayloadFromUrl();
+    render();
+}
 
 function bindEvents() {
     elements.width.addEventListener("input", () => {
@@ -56,6 +63,64 @@ function bindEvents() {
             state.activeTab = selectedTab;
             render();
         });
+    }
+
+    window.addEventListener("hashchange", async () => {
+        await initializePayloadFromUrl();
+        render();
+    });
+}
+
+async function initializePayloadFromUrl() {
+    const hash = window.location.hash.substring(1);
+    if (!hash) {
+        return;
+    }
+
+    const params = new URLSearchParams(hash);
+    const rawData = params.get("data");
+    const compressedData = params.get("zdata");
+
+    if (!rawData && !compressedData) {
+        return;
+    }
+
+    let content = null;
+    let name = "URL Payload";
+
+    try {
+        if (compressedData) {
+            const binaryString = atob(compressedData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const decompressed = pako.inflateRaw(bytes);
+            content = new TextDecoder().decode(decompressed);
+            name = "Compressed Residuals";
+        } else if (rawData) {
+            content = atob(rawData);
+            name = "Residuals";
+        }
+
+        if (content) {
+            const parsed = parseResidualData(content);
+            state.files = [
+                {
+                    status: "ok",
+                    name: name,
+                    ...parsed,
+                },
+            ];
+        }
+    } catch (error) {
+        state.files = [
+            {
+                status: "error",
+                name: "URL Payload",
+                message: "Failed to parse URL data: " + normalizeError(error),
+            },
+        ];
     }
 }
 
