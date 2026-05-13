@@ -1,0 +1,8 @@
+[build]
+  publish = "web"
+
+[context.production]
+  branch = "deploy"
+
+[context.branch-deploy]
+  branch = "dev"
