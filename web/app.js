@@ -113,7 +113,8 @@ async function initializePayloadFromUrl() {
 
     try {
         if (compressedData) {
-            const binaryString = atob(compressedData);
+            const decoded = decodeURIComponent(compressedData);
+            const binaryString = atob(decoded);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
@@ -122,7 +123,7 @@ async function initializePayloadFromUrl() {
             content = new TextDecoder().decode(decompressed);
             if (name === 'grasshopper_residuals.dat') name = "Compressed Residuals";
         } else if (rawData) {
-            content = atob(rawData);
+            content = atob(decodeURIComponent(rawData));
             if (name === 'grasshopper_residuals.dat') name = "Residuals";
         }
 
