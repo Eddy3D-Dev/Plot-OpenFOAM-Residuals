@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plotfoam-v5';
+const CACHE_NAME = 'plotfoam-v6';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -11,7 +11,6 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', event => {
-    // Skip waiting so the new SW activates immediately
     self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_CACHE))
@@ -19,35 +18,44 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // For navigation requests (HTML pages), use network-first so we never
-    // serve a stale index.html from cache.
-    if (event.request.mode === 'navigate') {
+    const url = new URL(event.request.url);
+
+    // Same-origin requests (our HTML, JS, CSS): network-first.
+    // This ensures users always get the latest code and never get
+    // stuck on a stale cached app.js that lacks new features/fixes.
+    // The cache is only used as an offline fallback.
+    if (url.origin === self.location.origin) {
         event.respondWith(
-            fetch(event.request).catch(() => caches.match(event.request))
+            fetch(event.request)
+                .then(response => {
+                    // Update the cache with the fresh response for offline use
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                    return response;
+                })
+                .catch(() => caches.match(event.request))
         );
         return;
     }
 
+    // Third-party CDN resources (Plotly, fonts): cache-first.
+    // These are versioned URLs that rarely change, so serving from
+    // cache is safe and makes the app load faster.
     event.respondWith(
         caches.match(event.request).then(response => {
-            // Return cached version or fetch from network
             return response || fetch(event.request).then(fetchRes => {
                 return caches.open(CACHE_NAME).then(cache => {
-                    // Cache new resources dynamically if it's from our origin or CDNs
-                    if (event.request.url.startsWith('http')) {
-                        cache.put(event.request.url, fetchRes.clone());
-                    }
+                    cache.put(event.request, fetchRes.clone());
                     return fetchRes;
                 });
             });
         }).catch(() => {
-            // Fallback if offline
+            // Offline and not cached — nothing we can do
         })
     );
 });
 
 self.addEventListener('activate', event => {
-    // Claim all clients immediately so the new SW takes over right away
     event.waitUntil(
         caches.keys().then(keys => {
             return Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
