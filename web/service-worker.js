@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plotfoam-v3';
+const CACHE_NAME = 'plotfoam-v5';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',

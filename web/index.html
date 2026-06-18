@@ -41,6 +41,59 @@
 </head>
 
 <body>
+    <!-- Loading overlay shown while decoding hash payload & waiting for Plotly -->
+    <div id="loading-overlay" class="loading-overlay" hidden>
+        <div class="loading-card">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading residual data…</p>
+            <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
+        </div>
+    </div>
+
+    <style>
+        .loading-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .loading-overlay[hidden] { display: none; }
+        .loading-card {
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            padding: 2rem 2.5rem; border-radius: 1rem;
+            background: var(--color-surface, #fff);
+            box-shadow: 0 8px 32px rgba(0,0,0,.18);
+        }
+        .loading-spinner {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 3px solid var(--color-border, #e2e8f0);
+            border-top-color: var(--color-accent, #6366f1);
+            animation: spin .7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500; font-size: .95rem;
+            color: var(--color-text, #1e293b);
+            margin: 0;
+        }
+        .loading-bar-track {
+            width: 180px; height: 4px; border-radius: 2px;
+            background: var(--color-border, #e2e8f0); overflow: hidden;
+        }
+        .loading-bar-fill {
+            height: 100%; border-radius: 2px;
+            background: var(--color-accent, #6366f1);
+            animation: progress-indeterminate 1.4s ease-in-out infinite;
+        }
+        @keyframes progress-indeterminate {
+            0%   { width: 0; margin-left: 0; }
+            50%  { width: 60%; margin-left: 20%; }
+            100% { width: 0; margin-left: 100%; }
+        }
+    </style>
+
     <div class="background-shape background-shape-left" aria-hidden="true"></div>
     <div class="background-shape background-shape-right" aria-hidden="true"></div>
 

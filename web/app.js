@@ -35,8 +35,31 @@ init();
 
 async function init() {
     bindEvents();
-    await initializePayloadFromUrl();
-    render();
+
+    const hasHashPayload = window.location.hash.length > 1;
+    const loader = document.getElementById('loading-overlay');
+
+    if (hasHashPayload && loader) {
+        loader.hidden = false;
+    }
+
+    try {
+        await initializePayloadFromUrl();
+
+        // Wait for Plotly to be available before rendering.
+        // Plotly is loaded via a separate <script defer> tag and may not
+        // be ready yet when this module executes.
+        if (state.files.length > 0) {
+            await waitForPlotly();
+        }
+
+        render();
+    } finally {
+        if (loader) {
+            loader.hidden = true;
+        }
+    }
+
     loadContributors();
 
     if ('serviceWorker' in navigator) {
@@ -46,6 +69,29 @@ async function init() {
             });
         });
     }
+}
+
+/**
+ * Waits for Plotly to be available on the global scope.
+ * Returns immediately if already loaded, otherwise polls every 50ms
+ * with a timeout of 15 seconds.
+ */
+function waitForPlotly(timeoutMs = 15000) {
+    if (typeof Plotly !== 'undefined') {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const interval = setInterval(() => {
+            if (typeof Plotly !== 'undefined') {
+                clearInterval(interval);
+                resolve();
+            } else if (Date.now() - start > timeoutMs) {
+                clearInterval(interval);
+                reject(new Error('Plotly failed to load within ' + timeoutMs + 'ms'));
+            }
+        }, 50);
+    });
 }
 
 async function initializePayloadFromUrl() {
